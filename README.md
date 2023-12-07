@@ -4,6 +4,7 @@ You can extend your project base on this, which contains the local jar - `[foodi
 
 ### How to run
 ```shell
+mvn install
 mvn clean compile exec:java
 ```
 
