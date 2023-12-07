@@ -5,14 +5,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>ie.foodie</groupId>
-    <artifactId>base</artifactId>
+    <artifactId>order-service</artifactId>
     <version>1.0-SNAPSHOT</version>
-
-    <properties>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
 
     <build>
         <plugins>
@@ -24,36 +18,13 @@
                     <mainClass>ie.foodie.Main</mainClass>
                 </configuration>
             </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-install-plugin</artifactId>
-                <version>3.1.1</version>
-                <executions>
-                    <execution>
-                        <id>install-external</id>
-                        <phase>clean</phase>
-                        <configuration>
-                            <file>${project.basedir}/src/main/resources/foodie-core-2.0.jar</file>
-                            <groupId>ie.foodie</groupId>
-                            <artifactId>foodie-core</artifactId>
-                            <version>2.0</version>
-                            <packaging>jar</packaging>
-                            <generatePom>true</generatePom>
-                        </configuration>
-                        <goals>
-                            <goal>install-file</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
 
     <dependencies>
         <dependency>
             <groupId>ie.foodie</groupId>
-            <artifactId>foodie-core</artifactId>
+            <artifactId>core</artifactId>
             <version>2.0</version>
         </dependency>
 

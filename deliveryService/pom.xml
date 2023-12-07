@@ -1,0 +1,8 @@
+<project>
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>ie.foodie</groupId>
+    <artifactId>delivery-service</artifactId>
+    <version>1</version>
+    <packaging>jar</packaging>
+
+</project>

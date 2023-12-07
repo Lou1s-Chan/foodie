@@ -1,0 +1,22 @@
+<project>
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>ie.foodie</groupId>
+    <artifactId>foodie-service</artifactId>
+    <version>1</version>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>core</module>
+        <module>orderService</module>
+        <module>userService</module>
+        <module>paymentService</module>
+        <module>restaurantService</module>
+        <module>deliveryService</module>
+    </modules>
+
+    <properties>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+    </properties>
+
+</project>
