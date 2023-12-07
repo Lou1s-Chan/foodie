@@ -33,6 +33,18 @@
         <artifactId>sqlite-jdbc</artifactId>
         <version>3.34.0</version>
     </dependency>
+    <dependency>
+        <groupId>com.typesafe.akka</groupId>
+        <artifactId>akka-actor_3</artifactId>
+        <version>2.9.0-M2</version>
+        <scope>compile</scope>
+    </dependency>
+    <dependency>
+        <groupId>ie.foodie</groupId>
+        <artifactId>core</artifactId>
+        <version>2.0</version>
+        <scope>compile</scope>
+    </dependency>
 </dependencies>
 
 </project>
