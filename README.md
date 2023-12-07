@@ -3,6 +3,7 @@
 
 ### How to run
 ```shell
-mvn package install
+mvn package
+mvn install
 mvn clean compile
 ```
