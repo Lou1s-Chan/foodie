@@ -1,8 +1,8 @@
 package ie.foodie.messages.models;
 
 public class Order {
-    public Restaurant restaurant;
-    public OrderDetail[] orderDetails;
+    private Restaurant restaurant;
+    private OrderDetail[] orderDetails;
 
     public Order(Restaurant restaurant, OrderDetail[] orderDetails) {
         this.restaurant = restaurant;
