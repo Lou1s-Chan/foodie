@@ -2,11 +2,21 @@ package service;
 
 import akka.actor.*;
 import java.sql.*;
+import service.ResQuoter;
 
 public class Main {
     static ActorSystem system = ActorSystem.create("RestaurantService");
     public static void main(String[] args) {
         System.out.println("Running Restaurant Service");
+
+        final Props ResQuoterProp = Props.create(ResQuoter.class);
+        final ActorRef ResQuoterRef = system.actorOf(ResQuoterProp, "ResQuoter");
+
+        String OrderPath = "akka.tcp://default@order:2550/user/OrderQuoter";
+        ActorSelection remoteActor = system.actorSelection(OrderPath);
+
+        System.out.println("remoteActor: " + remoteActor);
+//        remoteActor.tell(new Message(ResQuoterRef, "RestaurantService"), ResQuoterRef);
 
 
         try {
