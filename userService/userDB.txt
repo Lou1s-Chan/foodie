@@ -1,5 +1,0 @@
-userId,username,email,password,address
-1,john_doe,john@example.com,password123,123 Main St
-2,jane_smith,jane@example.com,pass456,456 Oak Ave
-3,bob_jones,bob@example.com,securePass,789 Pine Ln
-
