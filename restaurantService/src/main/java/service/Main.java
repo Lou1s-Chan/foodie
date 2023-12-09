@@ -5,12 +5,12 @@ import java.sql.*;
 import service.ResQuoter;
 
 public class Main {
-    static ActorSystem system = ActorSystem.create("RestaurantService");
+    static ActorSystem system = ActorSystem.create("restaurant-system");
     public static void main(String[] args) {
         System.out.println("Running Restaurant Service");
 
         final Props ResQuoterProp = Props.create(ResQuoter.class);
-        final ActorRef ResQuoterRef = system.actorOf(ResQuoterProp, "ResQuoter");
+        final ActorRef ResQuoterRef = system.actorOf(ResQuoterProp, "restaurant-ref");
 
         String OrderPath = "akka.tcp://default@order:2550/user/OrderQuoter";
         ActorSelection remoteActor = system.actorSelection(OrderPath);
