@@ -15,11 +15,16 @@ public class Main {
         final Props ResQuoterProp = Props.create(ResQuoter.class);
         final ActorRef ResQuoterRef = system.actorOf(ResQuoterProp, "restaurant-ref");
 
-        String OrderPath = "akka.tcp://order-system@order-host:2553/user/order-service";
-        ActorSelection remoteActor = system.actorSelection(OrderPath);
+        try {
+            String OrderPath = "akka.tcp://order-system@order-host:2553/user/order-service";
+            ActorSelection remoteActor = system.actorSelection(OrderPath);
 
-        System.out.println("remoteActor: " + remoteActor);
-        remoteActor.tell(ResQuoterRef.toString() + " restaurant service", ResQuoterRef);
+            System.out.println("remoteActor: " + remoteActor);
+            remoteActor.tell(ResQuoterRef.toString() + " restaurant service", ResQuoterRef);
+        } catch (Exception e) {
+            System.out.println("Error connecting to order service.");
+            e.printStackTrace();
+        }
 
 
         try {
