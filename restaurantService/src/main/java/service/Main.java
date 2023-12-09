@@ -1,8 +1,11 @@
 package service;
 
-import akka.actor.*;
+import akka.actor.ActorRef;
+import akka.actor.ActorSelection;
+import akka.actor.ActorSystem;
+import akka.actor.Props;
+
 import java.sql.*;
-import service.ResQuoter;
 
 public class Main {
     static ActorSystem system = ActorSystem.create("restaurant-system");
@@ -16,7 +19,7 @@ public class Main {
         ActorSelection remoteActor = system.actorSelection(OrderPath);
 
         System.out.println("remoteActor: " + remoteActor);
-//        remoteActor.tell(new Message(ResQuoterRef, "RestaurantService"), ResQuoterRef);
+        remoteActor.tell(ResQuoterRef.toString() + " restaurant service", ResQuoterRef);
 
 
         try {
