@@ -12,7 +12,7 @@ public class Main {
         final Props ResQuoterProp = Props.create(ResQuoter.class);
         final ActorRef ResQuoterRef = system.actorOf(ResQuoterProp, "restaurant-ref");
 
-        String OrderPath = "akka.tcp://default@order:2550/user/OrderQuoter";
+        String OrderPath = "akka.tcp://order-system@order-host:2553/user/order-service";
         ActorSelection remoteActor = system.actorSelection(OrderPath);
 
         System.out.println("remoteActor: " + remoteActor);
