@@ -2,24 +2,35 @@ import akka.actor.ActorRef;
 import akka.actor.ActorSelection;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
+import ie.foodie.messages.CustomerOrderMessage;
+import ie.foodie.messages.models.Customer;
+import ie.foodie.messages.models.Order;
+import ie.foodie.messages.models.Order.OrderDetail;
+import ie.foodie.messages.models.Order.Restaurant;
 import service.Login;
 import service.UserActor;
-import service.core.ClientInfo;
-import service.message.ClientMessage;
 import service.message.OrderQueryMessage;
-import service.message.RegisterMessage;
 
 public class Main {
     public static void main(String[] args) {
 
-        ActorSystem system = ActorSystem.create();
+        // creating the system and actor for USER
+        ActorSystem system = ActorSystem.create("user-system");
         final ActorRef ref = system.actorOf(
                 Props.create(UserActor.class),
-                "user");
+                "user-ref");
+
+        // send message to ORDER in different system
         ActorSelection selection = system
-                .actorSelection("akka.tcp://default@order:2550/user/order");
+                .actorSelection("akka.tcp://order-system@order-host:2553/user/order-service");
         System.out.println("user make an order to order system");
-        selection.tell((new OrderQueryMessage(001, 00001, 18.8, "123 Main St", "123456789")), ref);
+
+        Restaurant restaurant1 = new Restaurant(1, "123456789", "Dublin1");
+        OrderDetail[] orderDetail1 = { new OrderDetail(1, 18.88, 3), new OrderDetail(2, 28.88, 5) };
+        Restaurant restaurant2 = new Restaurant(2, "987654321", "Dublin2");
+        OrderDetail[] orderDetail2 = { new OrderDetail(3, 7.99, 2), new OrderDetail(4, 59.99, 4) };
+        Order[] order1 = { new Order(restaurant1, orderDetail1), new Order(restaurant2, orderDetail2) };
+        selection.tell(new CustomerOrderMessage(new Customer(1, "Dublin1", "123456789"), order1), ref);
 
         // // Creating a User object
         // User user1 = new User(1, "john_doe", "john@example.com");
@@ -36,10 +47,10 @@ public class Main {
         // // Printing the entire User object using toString method
         // System.out.println("User Details: " + user1);
 
-        Login loginHandler = new Login();
-        // Example login attempts
-        loginHandler.login("exampleUser", "password123"); // Successful login
-        loginHandler.login("invalidUser", "wrongPassword"); // Failed login
+        // Login loginHandler = new Login();
+        // // Example login attempts
+        // loginHandler.login("exampleUser", "password123"); // Successful login
+        // loginHandler.login("invalidUser", "wrongPassword"); // Failed login
     }
 
 }
