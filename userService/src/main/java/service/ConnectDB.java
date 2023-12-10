@@ -31,7 +31,8 @@ public class ConnectDB {
     private static void createUserTable(Connection conn) throws SQLException {
         String sqlCreateTable = "CREATE TABLE IF NOT EXISTS user (" +
                 "user_id INTEGER PRIMARY KEY AUTOINCREMENT," +
-                "name TEXT NOT NULL," +
+                "username TEXT NOT NULL," +
+                "password TEXT NOT NULL," +
                 "phone INTEGER," +
                 "address TEXT)";
 
@@ -42,8 +43,7 @@ public class ConnectDB {
 
     private static void insertUserTable(Connection conn) throws SQLException {
         String[] userInfos = {
-                "INSERT INTO user ( name, phone, address) VALUES ('Moo', 123456789, 'Dublin 1');" +
-                        "INSERT INTO user ( name, phone, address) VALUES ('Itgel', 123456789, 'Dublin 2');"
+                "INSERT INTO user ( username,password, phone, address) VALUES ('Moo','password1', 123456789, 'Dublin 1');"
 
         };
 
