@@ -2,8 +2,7 @@ import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.testkit.javadsl.TestKit;
 import akka.actor.Props;
-import ie.foodie.messages.MessageSerializable;
-import ie.foodie.messages.RestaurantOrderMessage;
+import ie.foodie.messages.*;
 import ie.foodie.messages.models.Order;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -38,9 +37,15 @@ public class RestTests implements MessageSerializable {
                 new Order.Restaurant(
                         1, "555-1234", "123 Oak Street"), orderDetails));
 
-        subject.tell(testOrder, probe.getRef());
+        RestaurantQueryMessage testQuery = new RestaurantQueryMessage(RestaurantQueryMessage.QueryType.RESTAURANT_LIST);
+        RestaurantQueryMessage testMenuRequest = new RestaurantQueryMessage(RestaurantQueryMessage.QueryType.MENU_REQUEST, 1);
+//        subject.tell(testOrder, probe.getRef());
+//        subject.tell(testQuery, probe.getRef());
+        subject.tell(testMenuRequest, probe.getRef());
 
-        String response = probe.expectMsgClass(Duration.ofSeconds(2), String.class);
+//        String response = probe.expectMsgClass(Duration.ofSeconds(2), String.class);
+//        RestaurantsResponse response = probe.expectMsgClass(Duration.ofSeconds(2), RestaurantsResponse.class);
+        MenuItemsResponse response = probe.expectMsgClass(Duration.ofSeconds(2), MenuItemsResponse.class);
         System.out.println(response);
     }
 }
