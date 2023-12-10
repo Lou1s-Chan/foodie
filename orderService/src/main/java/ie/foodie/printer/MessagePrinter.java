@@ -1,11 +1,21 @@
 package ie.foodie;
 
 import ie.foodie.messages.CustomerOrderMessage;
+import ie.foodie.messages.PaymentConfirmMessage;
 import ie.foodie.messages.models.Customer;
 import ie.foodie.messages.models.Order;
 
-public class CustomerOrderMessagePrinter {
+public class MessagePrinter {
 
+    public static void printPaymentConfirmMessage(PaymentConfirmMessage message) {
+        if (message == null) {
+            System.out.println("Message is null.");
+        } else {
+            System.out.println("PaymentConfirmMessage Details:");
+            System.out.println("Order ID: " + message.getOrderId());
+            System.out.println("Status: " + message.getStatus());
+        }
+    }
     public static void printCustomerOrderMessage(CustomerOrderMessage customerOrderMessage) {
         if (customerOrderMessage == null) {
             System.out.println("No order information available.");

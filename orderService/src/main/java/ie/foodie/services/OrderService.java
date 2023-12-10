@@ -2,8 +2,7 @@ package ie.foodie.services;
 
 import akka.actor.AbstractActor;
 import akka.actor.ActorRef;
-import akka.actor.ActorSelection;
-import ie.foodie.CustomerOrderMessagePrinter;
+import ie.foodie.MessagePrinter;
 import ie.foodie.actors.ActorProvider;
 import ie.foodie.database.OrderDao;
 import ie.foodie.messages.*;
@@ -31,17 +30,18 @@ public class OrderService extends AbstractActor {
     public Receive createReceive() {
         return receiveBuilder()
                 .match(CustomerOrderMessage.class, msg -> {
-                    System.out.println("received order message: " + msg.getCustomer().getCustomerId());
+                    System.out.println("** Received order message: " + msg.getCustomer().getCustomerId());
                     // calculate price and store to db
                     OrderConfirmMessage orderConfirmMessage = orderDao.insertCustomerOrderMessage(msg);
                     System.out.println("order id: " + orderConfirmMessage.getOrderId());
                     CustomerOrderMessage returnValue = orderDao.selectByOrderId(orderConfirmMessage.getOrderId());
-                    CustomerOrderMessagePrinter.printCustomerOrderMessage(returnValue);
+                    MessagePrinter.printCustomerOrderMessage(returnValue);
 
                     getSender().tell(orderConfirmMessage, getSelf());
                 })
                 .match(PaymentConfirmMessage.class, msg -> {
-                    System.out.println("received payment message with orderID : " + msg.getOrderId() + ", status: " + msg.getStatus());
+                    System.out.println("** Received payment message: ");
+                    MessagePrinter.printPaymentConfirmMessage(msg);
                     // change status in db
                     boolean updatePaymentStatus = orderDao.updatePaymentStatus(msg);
                     if (!updatePaymentStatus) {
@@ -52,7 +52,12 @@ public class OrderService extends AbstractActor {
                     // send order to restaurant
                     // send order to delivery
                     for (Order order: customerOrderMessage.getOrders()) {
-                        restaurantActor.tell(new RestaurantOrderMessage(customerOrderMessage.getCustomer().getCustomerId(), order), getSelf());
+                        //
+                        System.out.println("** Sending restaurant message: ");
+                        RestaurantOrderMessage restaurantOrderMessage = new RestaurantOrderMessage(customerOrderMessage.getCustomer().getCustomerId(), order);
+
+                        restaurantActor.tell(restaurantOrderMessage, getSelf());
+                        //
                         deliveryActor.tell(new OrderDeliveryMessage(order, customerOrderMessage.getCustomer()), getSelf());
                     }
                 })
