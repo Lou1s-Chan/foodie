@@ -1,8 +1,8 @@
 package ie.foodie.services;
 
 import akka.actor.AbstractActor;
+import akka.actor.ActorRef;
 import akka.actor.ActorSelection;
-import com.sun.org.apache.xpath.internal.operations.Or;
 import ie.foodie.CustomerOrderMessagePrinter;
 import ie.foodie.actors.ActorProvider;
 import ie.foodie.database.OrderDao;
@@ -10,9 +10,22 @@ import ie.foodie.messages.*;
 import ie.foodie.messages.models.Order;
 
 public class OrderService extends AbstractActor {
-    private final OrderDao orderDao = new OrderDao();
-    private final ActorSelection deliveryActor = ActorProvider.getDeliveryActor(getContext().getSystem());
-    private final ActorSelection restaurantActor = ActorProvider.getRestaurantActor(getContext().getSystem());
+    private final OrderDao orderDao;
+    private final ActorRef deliveryActor;
+    private final ActorRef restaurantActor;
+
+    public OrderService() {
+        deliveryActor = ActorProvider.getDeliveryActor(getContext().getSystem()).anchor();
+        restaurantActor = ActorProvider.getRestaurantActor(getContext().getSystem()).anchor();
+        orderDao = new OrderDao();
+    }
+
+    //for test
+    public OrderService(ActorRef deliveryActor, ActorRef restaurantActor, OrderDao orderDao) {
+        this.deliveryActor = deliveryActor;
+        this.restaurantActor = restaurantActor;
+        this.orderDao = orderDao;
+    }
 
     @Override
     public Receive createReceive() {
@@ -28,7 +41,7 @@ public class OrderService extends AbstractActor {
                     getSender().tell(orderConfirmMessage, getSelf());
                 })
                 .match(PaymentConfirmMessage.class, msg -> {
-                    System.out.println("received payment message with orderID: " + msg.getOrderId() + ", status: " + msg.getStatus());
+                    System.out.println("received payment message with orderID : " + msg.getOrderId() + ", status: " + msg.getStatus());
                     // change status in db
                     boolean updatePaymentStatus = orderDao.updatePaymentStatus(msg);
                     if (!updatePaymentStatus) {
