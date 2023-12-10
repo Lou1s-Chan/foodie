@@ -7,9 +7,7 @@ import ie.foodie.messages.models.Customer;
 import ie.foodie.messages.models.Order;
 import ie.foodie.messages.models.Order.OrderDetail;
 import ie.foodie.messages.models.Order.Restaurant;
-import service.Login;
 import service.UserActor;
-import service.message.OrderQueryMessage;
 
 public class Main {
     public static void main(String[] args) {
@@ -32,25 +30,6 @@ public class Main {
         Order[] order1 = { new Order(restaurant1, orderDetail1), new Order(restaurant2, orderDetail2) };
         selection.tell(new CustomerOrderMessage(new Customer(1, "Dublin1", "123456789"), order1), ref);
 
-        // // Creating a User object
-        // User user1 = new User(1, "john_doe", "john@example.com");
-
-        // // Accessing attributes using getter methods
-        // System.out.println("User ID: " + user1.getUserId());
-        // System.out.println("Username: " + user1.getUsername());
-        // System.out.println("Email: " + user1.getEmail());
-
-        // // Updating attributes using setter methods
-        // user1.setUsername("john_doe_updated");
-        // System.out.println("Updated Username: " + user1.getUsername());
-
-        // // Printing the entire User object using toString method
-        // System.out.println("User Details: " + user1);
-
-        // Login loginHandler = new Login();
-        // // Example login attempts
-        // loginHandler.login("exampleUser", "password123"); // Successful login
-        // loginHandler.login("invalidUser", "wrongPassword"); // Failed login
     }
 
 }
