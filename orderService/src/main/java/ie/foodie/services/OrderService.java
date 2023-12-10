@@ -30,7 +30,7 @@ public class OrderService extends AbstractActor {
     public Receive createReceive() {
         return receiveBuilder()
                 .match(CustomerOrderMessage.class, msg -> {
-                    System.out.println("------- Received order message: " + msg.getCustomer().getCustomerId());
+                    System.out.println("******** Received order message: " + msg.getCustomer().getCustomerId());
                     // calculate price and store to db
                     OrderConfirmMessage orderConfirmMessage = orderDao.insertCustomerOrderMessage(msg);
                     System.out.println("order id: " + orderConfirmMessage.getOrderId());
@@ -40,7 +40,7 @@ public class OrderService extends AbstractActor {
                     getSender().tell(orderConfirmMessage, getSelf());
                 })
                 .match(PaymentConfirmMessage.class, msg -> {
-                    System.out.println("** Received payment message: ");
+                    System.out.println("******** Received payment message: ");
                     MessagePrinter.printPaymentConfirmMessage(msg);
                     // change status in db
                     boolean updatePaymentStatus = orderDao.updatePaymentStatus(msg);
@@ -52,13 +52,17 @@ public class OrderService extends AbstractActor {
                     // send order to restaurant
                     // send order to delivery
                     for (Order order: customerOrderMessage.getOrders()) {
-                        //
-                        System.out.println("------- Sending restaurant message: ");
+                        // print out restaurant message sent
+                        System.out.println("******** Sending restaurant message: ");
                         RestaurantOrderMessage restaurantOrderMessage = new RestaurantOrderMessage(customerOrderMessage.getCustomer().getCustomerId(), order);
                         MessagePrinter.printRestaurantOrderMessage(restaurantOrderMessage);
                         restaurantActor.tell(restaurantOrderMessage, getSelf());
-                        //
-                        deliveryActor.tell(new OrderDeliveryMessage(order, customerOrderMessage.getCustomer()), getSelf());
+                        // print out delivery message sent
+
+                        System.out.println("******** Sending delivery message: ");
+                        OrderDeliveryMessage orderDeliveryMessage = new OrderDeliveryMessage(order, customerOrderMessage.getCustomer());
+                        deliveryActor.tell(orderDeliveryMessage, getSelf());
+                        MessagePrinter.printOrderDeliveryMessage(orderDeliveryMessage);
                     }
                 })
                 .build();
