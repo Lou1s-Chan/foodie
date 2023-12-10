@@ -16,16 +16,23 @@ public class OrderDao {
 
     private Connection connection = null;
 
-    public OrderDao() {
+    public OrderDao(String dbPath) {
         // create a database connection
-        createConnection();
+        createConnection(dbPath);
         createSchema();
     }
 
-    private void createConnection() {
+    public OrderDao() {
+        // create a database connection
+        createConnection(null);
+        createSchema();
+    }
+
+    private void createConnection(String dbPath) {
         try {
-//            connection = DriverManager.getConnection("jdbc:sqlite:" + System.getProperty("user.dir") + "/orderService/src/main/resources/data.db");
-            connection = DriverManager.getConnection("jdbc:sqlite:" + "/Users/fio/Desktop/foodie/foodie-base/orderService/src/main/resources/data.db");
+            if (dbPath == null)
+                dbPath = "/src/main/resources/data.db";
+            connection = DriverManager.getConnection("jdbc:sqlite:" + System.getProperty("user.dir") + dbPath);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

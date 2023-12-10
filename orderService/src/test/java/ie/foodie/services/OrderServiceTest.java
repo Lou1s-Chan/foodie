@@ -4,17 +4,15 @@ import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
 import akka.testkit.TestKit;
-import ie.foodie.messages.CustomerOrderMessage;
-import ie.foodie.messages.OrderConfirmMessage;
+import ie.foodie.database.OrderDao;
+import ie.foodie.messages.*;
 import ie.foodie.messages.models.Customer;
 import ie.foodie.messages.models.Order;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 import scala.concurrent.duration.Duration;
 import scala.concurrent.duration.FiniteDuration;
 
+import java.io.File;
 import java.util.concurrent.TimeUnit;
 
 public class OrderServiceTest {
@@ -31,6 +29,12 @@ public class OrderServiceTest {
         system = null;
     }
 
+    @After
+    public void cleanUpDb() {
+        File resourcesDirectory = new File("src/main/resources/data.db");
+        resourcesDirectory.delete();
+    }
+
     @Test
     public void testSendCustomerOrderMessage() {
         CustomerOrderMessage customerOrderMessage = generateCustomerOrderMessage();
@@ -44,6 +48,28 @@ public class OrderServiceTest {
 
         Assert.assertEquals(1, orderConfirmMessage.getOrderId());
         Assert.assertEquals(91.98, orderConfirmMessage.getTotalPrice(), 0);
+    }
+
+    @Test
+    public void testReceivePaymentConfirmMessage() {
+        CustomerOrderMessage orderConfirmMessage = generateCustomerOrderMessage();
+        PaymentConfirmMessage paymentConfirmMessage = genereatePaymentConfirmMessage(1);
+        OrderDao orderDao = new OrderDao("/src/test/resources/data.db");
+        orderDao.insertCustomerOrderMessage(orderConfirmMessage);
+        final TestKit deliveryService = new TestKit(system); // delivery service
+        final TestKit restaurantService = new TestKit(system); // restaurant service
+        final Props props = Props.create(OrderService.class, deliveryService.testActor(), restaurantService.testActor(), orderDao);
+        final ActorRef orderService = system.actorOf(props); // orderService
+        final TestKit paymentService = new TestKit(system); // payment service
+
+        orderService.tell(paymentConfirmMessage, paymentService.testActor());
+
+        deliveryService.expectMsgClass(FiniteDuration.apply(10, TimeUnit.SECONDS), OrderDeliveryMessage.class);
+        restaurantService.expectMsgClass(FiniteDuration.apply(10, TimeUnit.SECONDS), RestaurantOrderMessage.class);
+    }
+
+    private PaymentConfirmMessage genereatePaymentConfirmMessage(int orderId) {
+        return new PaymentConfirmMessage(orderId, "success");
     }
 
     private CustomerOrderMessage generateCustomerOrderMessage() {
