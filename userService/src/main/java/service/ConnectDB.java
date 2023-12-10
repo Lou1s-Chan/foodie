@@ -33,7 +33,7 @@ public class ConnectDB {
                 "user_id INTEGER PRIMARY KEY AUTOINCREMENT," +
                 "username TEXT NOT NULL," +
                 "password TEXT NOT NULL," +
-                "phone INTEGER," +
+                "phone TEXT," +
                 "address TEXT)";
 
         try (Statement stmt = conn.createStatement()) {
@@ -43,7 +43,7 @@ public class ConnectDB {
 
     private static void insertUserTable(Connection conn) throws SQLException {
         String[] userInfos = {
-                "INSERT INTO user ( username,password, phone, address) VALUES ('Moo','password1', 123456789, 'Dublin 1');"
+                "INSERT INTO user ( username,password, phone, address) VALUES ('Moo','password1', '123456789', 'Dublin 1');"
 
         };
 
