@@ -2,17 +2,17 @@ import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.testkit.javadsl.TestKit;
 import akka.actor.Props;
+import ie.foodie.messages.MessageSerializable;
 import ie.foodie.messages.RestaurantOrderMessage;
 import ie.foodie.messages.models.Order;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import service.ResQuoter;
-import service.message.JSONSerialize;
 
 import java.time.Duration;
 
-public class RestTests implements JSONSerialize {
+public class RestTests implements MessageSerializable {
     static ActorSystem system;
     @BeforeClass
     public static void setup() {system = ActorSystem.create(); }
