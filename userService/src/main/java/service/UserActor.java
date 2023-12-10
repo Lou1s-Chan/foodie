@@ -2,7 +2,7 @@ package service;
 
 import akka.actor.AbstractActor;
 import akka.japi.pf.ReceiveBuilder;
-import service.message.OrderConfirmMessage;
+import ie.foodie.messages.OrderConfirmMessage;
 
 public class UserActor extends AbstractActor {
 
@@ -13,7 +13,8 @@ public class UserActor extends AbstractActor {
                         msg -> {
                             // message to payment
                             // foodOrder = msg.getInfo();
-                            // paymentActorRef.tell(new PaymentMessage(paymentDetail, foodOrder), getSelf());
+                            // paymentActorRef.tell(new PaymentMessage(paymentDetail, foodOrder),
+                            // getSelf());
                         })
                 .build();
     }
