@@ -1,12 +1,52 @@
-package ie.foodie;
+package ie.foodie.printer;
 
 import ie.foodie.messages.CustomerOrderMessage;
 import ie.foodie.messages.PaymentConfirmMessage;
+import ie.foodie.messages.RestaurantOrderMessage;
 import ie.foodie.messages.models.Customer;
 import ie.foodie.messages.models.Order;
 
 public class MessagePrinter {
 
+    public static void printRestaurantOrderMessage(RestaurantOrderMessage message) {
+        if (message == null) {
+            System.out.println("RestaurantOrderMessage is null.");
+            return;
+        }
+
+        System.out.println("Restaurant Order Message Details:");
+        System.out.println("Customer ID: " + message.getCustomerId());
+
+        Order order = message.getOrder();
+        if (order != null) {
+            printOrder(order);
+        } else {
+            System.out.println("Order details are not available.");
+        }
+    }
+
+    private static void printOrder(Order order) {
+        Order.Restaurant restaurant = order.getRestaurant();
+        if (restaurant != null) {
+            System.out.println("Restaurant ID: " + restaurant.getRestaurantId());
+            System.out.println("Restaurant Phone: " + restaurant.getRestaurantPhone());
+            System.out.println("Restaurant Address: " + restaurant.getRestaurantAddress());
+        } else {
+            System.out.println("Restaurant details are not available.");
+        }
+
+        Order.OrderDetail[] orderDetails = order.getOrderDetails();
+        if (orderDetails != null) {
+            System.out.println("Order Details:");
+            for (Order.OrderDetail detail : orderDetails) {
+                System.out.println(" - Food ID: " + detail.getFoodId() +
+                        ", Price: " + detail.getPrice() +
+                        ", Quantity: " + detail.getQuantity());
+            }
+        } else {
+            System.out.println("Order items are not available.");
+        }
+    }
     public static void printPaymentConfirmMessage(PaymentConfirmMessage message) {
         if (message == null) {
             System.out.println("Message is null.");

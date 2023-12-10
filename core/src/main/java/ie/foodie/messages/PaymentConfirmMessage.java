@@ -24,4 +24,12 @@ public class PaymentConfirmMessage implements MessageSerializable {
     public void setStatus(String status) {
         this.status = status;
     }
+
+    @Override
+    public String toString() {
+        return "PaymentConfirmMessage{" +
+                "orderId=" + orderId +
+                ", status='" + status + '\'' +
+                '}';
+    }
 }

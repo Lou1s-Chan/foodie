@@ -12,6 +12,7 @@ public class Main {
         ActorRef orderActorRef
                 = system.actorOf(Props.create(OrderService.class), "order-service");
 
+        System.out.println("Order service starts");
 //        orderActorRef.tell(customerOrderMessage, ActorRef.noSender());
     }
 }
