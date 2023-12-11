@@ -11,7 +11,7 @@
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>1.6.0</version>
                 <configuration>
-                    <mainClass>ie.foodie.Main</mainClass>
+                    <mainClass>Main</mainClass>
                 </configuration>
             </plugin>
             <plugin>
