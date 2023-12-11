@@ -2,6 +2,7 @@ package service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 import akka.actor.AbstractActor;
 import akka.japi.pf.ReceiveBuilder;
@@ -32,6 +33,28 @@ public class UserActor extends AbstractActor {
                             for (RestaurantData restaurant : restaurantList) {
                                 System.out.println(restaurant.toString());
                             }
+                            while (true) {
+                                System.out.print("Enter a restaurant id to check its menu: ");
+                                Scanner scanner = new Scanner(System.in);
+                                // Check if the next input is an integer
+                                if (scanner.hasNextInt()) {
+                                    int restaurantId = scanner.nextInt();
+                                    if ((restaurantId > 0) && (restaurantId < 31)) {
+                                        getSender().tell(
+                                                new RestaurantQueryMessage(
+                                                        RestaurantQueryMessage.QueryType.MENU_REQUEST,
+                                                        restaurantId),
+                                                getSelf());
+                                        System.out.println("Menu request sent!");
+                                        scanner.close();
+                                        break; // Exit the loop if a valid integer is entered
+                                    }
+                                } else {
+                                    System.out.println("Invalid input. Please enter a valid integer.");
+                                    scanner.nextLine(); // Consume the invalid input to avoid an infinite loop
+                                }
+                            }
+
                         })
                 .match(MenuItemsResponse.class,
                         msg -> {
