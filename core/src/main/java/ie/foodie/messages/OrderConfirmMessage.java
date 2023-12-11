@@ -9,6 +9,9 @@ public class OrderConfirmMessage implements MessageSerializable {
         this.totalPrice = totalPrice;
     }
 
+    public OrderConfirmMessage() {
+    }
+
     public int getOrderId() {
         return orderId;
     }

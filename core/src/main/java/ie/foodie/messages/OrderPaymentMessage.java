@@ -11,6 +11,9 @@ public class OrderPaymentMessage implements MessageSerializable {
         this.paymentMethod = paymentMethod;
     }
 
+    public OrderPaymentMessage() {
+    }
+
     public int getOrderId() {
         return orderId;
     }

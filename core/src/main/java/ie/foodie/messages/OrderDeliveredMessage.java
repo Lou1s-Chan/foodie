@@ -9,6 +9,9 @@ public class OrderDeliveredMessage implements MessageSerializable {
         this.status = status;
     }
 
+    public OrderDeliveredMessage() {
+    }
+
     public int getOrderId() {
         return orderId;
     }

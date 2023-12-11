@@ -14,6 +14,11 @@ public class RestaurantQueryMessage implements MessageSerializable {
         this.restaurantId = null;
     }
 
+    public RestaurantQueryMessage() {
+        this.queryType = null;
+        this.restaurantId = null;
+    }
+
     public RestaurantQueryMessage(QueryType queryType, int restaurantId) {
         this.queryType = queryType;
         this.restaurantId = restaurantId;

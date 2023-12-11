@@ -1,12 +1,16 @@
 package ie.foodie.messages.models;
 
-public class Order {
+import ie.foodie.messages.MessageSerializable;
+
+public class Order implements MessageSerializable {
     private Restaurant restaurant;
     private OrderDetail[] orderDetails;
 
     public Order(Restaurant restaurant, OrderDetail[] orderDetails) {
         this.restaurant = restaurant;
         this.orderDetails = orderDetails;
+    }
+    public Order() {
     }
 
     public Restaurant getRestaurant() {

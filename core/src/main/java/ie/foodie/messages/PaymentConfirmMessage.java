@@ -9,6 +9,9 @@ public class PaymentConfirmMessage implements MessageSerializable {
         this.status = status;
     }
 
+    public PaymentConfirmMessage() {
+    }
+
     public int getOrderId() {
         return orderId;
     }

@@ -1,15 +1,20 @@
 package ie.foodie.messages;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MenuItemsResponse implements MessageSerializable {
-    private final List<MenuItemData> menuItems;
+    private final ArrayList<MenuItemData> menuItems;
 
-    public MenuItemsResponse(List<MenuItemData> menuItems) {
+    public MenuItemsResponse(ArrayList<MenuItemData> menuItems) {
         this.menuItems = menuItems;
     }
 
-    public List<MenuItemData> getMenuItems() {
+    public MenuItemsResponse() {
+        this.menuItems = new ArrayList<MenuItemData>();
+    }
+
+    public ArrayList<MenuItemData> getMenuItems() {
         return menuItems;
     }
 
@@ -23,7 +28,7 @@ public class MenuItemsResponse implements MessageSerializable {
         return menuItemsString.toString();
     }
 
-    public static class MenuItemData {
+    public static class MenuItemData implements  MessageSerializable{
         private int itemId;
         private String itemName;
         private double price;
@@ -35,6 +40,9 @@ public class MenuItemsResponse implements MessageSerializable {
             this.itemName = itemName;
             this.price = price;
             this.description = description;
+        }
+
+        public MenuItemData() {
         }
 
         public int getItemId() {

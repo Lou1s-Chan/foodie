@@ -1,6 +1,7 @@
 package service;
 
 import akka.actor.AbstractActor;
+import akka.actor.ActorRef;
 import akka.japi.pf.ReceiveBuilder;
 import ie.foodie.messages.MenuItemsResponse;
 import ie.foodie.messages.RestaurantOrderMessage;
@@ -12,13 +13,12 @@ import com.zaxxer.hikari.HikariDataSource;
 
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.List;
 
-public class ResQuoter extends AbstractActor {
+public class ResActor extends AbstractActor {
     private String restaurantName = "Unknown";
     private final HikariDataSource ds;
 
-    public ResQuoter() {
+    public ResActor() {
         this.ds = new HikariDataSource();
         this.ds.setJdbcUrl("jdbc:sqlite:restaurantService/database/restaurantdatabase.db");
     }
@@ -102,9 +102,11 @@ public class ResQuoter extends AbstractActor {
                     getSender().tell("Order received", getSelf());
                 })
                 .match(RestaurantQueryMessage.class, msg -> {
-                    System.out.println("Request received from customer service.");
+                    ActorRef sender = getSender();
+                    System.out.println("Request received from customer service." + sender);
                     if (msg.getQueryType() == RestaurantQueryMessage.QueryType.RESTAURANT_LIST) {
-                        List<RestaurantData> restaurantList = new ArrayList<>();
+                        System.out.println("Restaurants list is requested.");
+                        ArrayList<RestaurantData> restaurantList = new ArrayList<>();
                         try (Connection conn = ds.getConnection();
                                 PreparedStatement stmt = conn.prepareStatement("SELECT * FROM restaurants")) {
                             try (ResultSet rs = stmt.executeQuery()) {
@@ -120,12 +122,15 @@ public class ResQuoter extends AbstractActor {
                         } catch (SQLException e) {
                             e.printStackTrace();
                         }
-                        System.out.println(getSender());
-                        getSender().tell(new RestaurantsResponse(restaurantList), getSelf());
-                        System.out.println("Restaurant List send back to customer");
+                        System.out.println(restaurantList);
+
+                        sender.tell(new RestaurantsResponse(restaurantList), getSelf());
+
+                        System.out.println("Restaurant List send back to user service " + sender);
                     } else if (msg.getQueryType() == RestaurantQueryMessage.QueryType.MENU_REQUEST) {
+                        System.out.println("Menu list is request for restaurant id: " + msg.getRestaurantID());
                         int restaurantId = msg.getRestaurantID();
-                        List<MenuItemsResponse.MenuItemData> menuItemsList = new ArrayList<>();
+                        ArrayList<MenuItemsResponse.MenuItemData> menuItemsList = new ArrayList<>();
                         try (Connection conn = ds.getConnection();
                                 PreparedStatement stmt = conn
                                         .prepareStatement("SELECT * FROM menu_item WHERE restaurant_id = ?")) {

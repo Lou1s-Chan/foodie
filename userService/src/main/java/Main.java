@@ -58,7 +58,7 @@ public class Main {
         ActorSelection selection1 = system
                 .actorSelection("akka.tcp://restaurant-system@localhost:2551/user/restaurant-service");
         System.out.println("user make a query to restaurant system");
-        selection1.tell(new RestaurantQueryMessage(RestaurantQueryMessage.QueryType.RESTAURANT_LIST), ref);
+        selection1.tell(new RestaurantQueryMessage(RestaurantQueryMessage.QueryType.MENU_REQUEST, 1), ref);
 
         // // send message to ORDER
         // ActorSelection selection2 = system
