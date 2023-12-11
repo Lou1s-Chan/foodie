@@ -21,34 +21,44 @@ import service.UserActor;
 
 public class Main {
     public static void main(String[] args) {
-        // // ask user to enter username and password
-        // System.out.println("Welcome to Foodie!");
-        // Scanner scanner = new Scanner(System.in);
-        // System.out.print("Enter your username: ");
-        // String username = scanner.nextLine();
-        // System.out.print("Enter your password: ");
-        // String password = scanner.nextLine();
-        // scanner.close();
+        boolean loginSuccess = false;
+        Scanner scanner = new Scanner(System.in);
 
-        // // compare user input to database
-        // String url = "jdbc:sqlite:userService/database/userdatabase.db";
-        // try (Connection conn = DriverManager.getConnection(url)) {
-        // if (conn != null) {
-        // HashMap<String, String> nameAndPassword = getNameAndPasword(conn);
-        // for (Map.Entry<String, String> entry : nameAndPassword.entrySet()) {
+        System.out.println("Welcome to Foodie!");
+        while (!loginSuccess) {
+            // Ask the user to enter username and password
+            System.out.print("Enter your username(Moo): ");
+            String username = scanner.nextLine();
+            System.out.print("Enter your password(password1): ");
+            String password = scanner.nextLine();
 
-        // // login details are correct
-        // if (username.equals(entry.getKey()) && (password.equals(entry.getValue()))) {
-        // System.out.println("Login success!");
-        // // initiate the customer with all details from database
-        // Customer user = getUserDetails(conn, entry.getKey());
-        // }
-        // }
-        // conn.close();
-        // }
-        // } catch (SQLException e) {
-        // e.printStackTrace();
-        // }
+            // Compare user input to the database
+            String url = "jdbc:sqlite:userService/database/userdatabase.db";
+
+            try (Connection conn = DriverManager.getConnection(url)) {
+                if (conn != null) {
+                    HashMap<String, String> nameAndPassword = getNameAndPassword(conn);
+
+                    // Check if the entered credentials are valid
+                    for (Map.Entry<String, String> entry : nameAndPassword.entrySet()) {
+                        if (username.equals(entry.getKey()) && password.equals(entry.getValue())) {
+                            System.out.println("Login success!");
+                            loginSuccess = true;
+                            // Initiate the customer with all details from the database
+                            Customer user = getUserDetails(conn, entry.getKey());
+                        }
+                    }
+
+                    if (!loginSuccess) {
+                        System.out.println("Invalid username or password. Please try again.");
+                    }
+
+                    conn.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
 
         // creating the system and actor for USER
         ActorSystem system = ActorSystem.create("user-system");
@@ -58,7 +68,10 @@ public class Main {
         ActorSelection selection1 = system
                 .actorSelection("akka.tcp://restaurant-system@localhost:2551/user/restaurant-service");
         System.out.println("user make a query to restaurant system");
-        selection1.tell(new RestaurantQueryMessage(RestaurantQueryMessage.QueryType.MENU_REQUEST, 1), ref);
+        // selection1.tell(new
+        // RestaurantQueryMessage(RestaurantQueryMessage.QueryType.MENU_REQUEST, 1),
+        // ref);
+        selection1.tell(new RestaurantQueryMessage(RestaurantQueryMessage.QueryType.RESTAURANT_LIST), ref);
 
         // // send message to ORDER
         // ActorSelection selection2 = system
@@ -78,7 +91,7 @@ public class Main {
     }
 
     // get all username and password from database
-    private static HashMap<String, String> getNameAndPasword(Connection conn) throws SQLException {
+    private static HashMap<String, String> getNameAndPassword(Connection conn) throws SQLException {
         HashMap<String, String> result = new HashMap<>();
         String query = "SELECT username, password FROM user";
         try (PreparedStatement preparedStatement = conn.prepareStatement(query);
