@@ -11,6 +11,7 @@ public class UserActor extends AbstractActor {
         return new ReceiveBuilder()
                 .match(OrderConfirmMessage.class,
                         msg -> {
+                            System.out.println("received");
                             // message to payment
                             // foodOrder = msg.getInfo();
                             // paymentActorRef.tell(new PaymentMessage(paymentDetail, foodOrder),

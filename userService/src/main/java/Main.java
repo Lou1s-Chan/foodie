@@ -11,6 +11,8 @@ import akka.actor.ActorRef;
 import akka.actor.ActorSelection;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 import ie.foodie.messages.CustomerOrderMessage;
 import ie.foodie.messages.models.Customer;
 import ie.foodie.messages.models.Order;
@@ -49,19 +51,20 @@ public class Main {
             e.printStackTrace();
         }
 
+        Config config = ConfigFactory.load();
         // creating the system and actor for USER
-        ActorSystem system = ActorSystem.create("user-system");
+        ActorSystem system = ActorSystem.create("user-system", config);
         final ActorRef ref = system.actorOf(Props.create(UserActor.class), "user-service");
 
         // V0.0.3 once user successfully login, send message to RESTAURANT for menu
-        ActorSelection selection1 = system
-                .actorSelection("akka.tcp://restaurant-system@restaurant-host:2551/user/restaurant-service");
-        System.out.println("user make a query to restaurant system");
+//        ActorSelection selection1 = system
+//                .actorSelection("akka.tcp://restaurant-system@restaurant-host:2551/user/restaurant-service");
+//        System.out.println("user make a query to restaurant system");
         // selection1.tell(new RestaurantQueryMessage("query"), ref);
 
         // send message to ORDER
         ActorSelection selection2 = system
-                .actorSelection("akka.tcp://order-system@order-host:2553/user/order-service");
+                .actorSelection("akka.tcp://order-system@localhost:2553/user/order-service");
         System.out.println("user make an order to order system");
         // V0.0.2 instantiate the restaurants object myself
         Restaurant restaurant1 = new Restaurant(1, "123456789", "Dublin1");
