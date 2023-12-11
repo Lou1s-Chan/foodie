@@ -13,7 +13,6 @@ import com.zaxxer.hikari.HikariDataSource;
 
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.List;
 
 public class ResActor extends AbstractActor {
     private String restaurantName = "Unknown";
@@ -129,7 +128,7 @@ public class ResActor extends AbstractActor {
                         System.out.println("Restaurant List send back to user service " + sender);
                     } else if (msg.getQueryType() == RestaurantQueryMessage.QueryType.MENU_REQUEST) {
                         int restaurantId = msg.getRestaurantID();
-                        List<MenuItemsResponse.MenuItemData> menuItemsList = new ArrayList<>();
+                        ArrayList<MenuItemsResponse.MenuItemData> menuItemsList = new ArrayList<>();
                         try (Connection conn = ds.getConnection();
                                 PreparedStatement stmt = conn
                                         .prepareStatement("SELECT * FROM menu_item WHERE restaurant_id = ?")) {
