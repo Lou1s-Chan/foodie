@@ -31,9 +31,10 @@ public class OrderDao {
     private void createConnection(String dbPath) {
         try {
             if (dbPath == null)
-                dbPath = "/src/main/resources/data.db";
+                dbPath = "/orderService/src/main/resources/data.db";
             connection = DriverManager.getConnection("jdbc:sqlite:" + System.getProperty("user.dir") + dbPath);
         } catch (SQLException e) {
+            e.printStackTrace();
             throw new RuntimeException(e);
         }
     }

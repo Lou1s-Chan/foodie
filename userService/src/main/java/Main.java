@@ -55,26 +55,26 @@ public class Main {
         final ActorRef ref = system.actorOf(Props.create(UserActor.class), "user-service");
 
         // V0.0.3 once user successfully login, send message to RESTAURANT for menu
-        ActorSelection selection1 = system
-                .actorSelection("akka.tcp://restaurant-system@localhost:2551/user/restaurant-service");
-        System.out.println("user make a query to restaurant system");
-        selection1.tell(new RestaurantQueryMessage(RestaurantQueryMessage.QueryType.MENU_REQUEST, 1), ref);
+//        ActorSelection selection1 = system
+//                .actorSelection("akka.tcp://restaurant-system@localhost:2551/user/restaurant-service");
+//        System.out.println("user make a query to restaurant system");
+//        selection1.tell(new RestaurantQueryMessage(RestaurantQueryMessage.QueryType.MENU_REQUEST, 1), ref);
 
         // // send message to ORDER
-        // ActorSelection selection2 = system
-        // .actorSelection("akka.tcp://order-system@localhost:2553/user/order-service");
-        // System.out.println("user make an order to order system");
-        // // V0.0.2 instantiate the restaurants object myself
-        // Restaurant restaurant1 = new Restaurant(1, "123456789", "Dublin1");
-        // OrderDetail[] orderDetail1 = { new OrderDetail(1, 18.88, 3), new
-        // OrderDetail(2, 28.88, 5) };
-        // Restaurant restaurant2 = new Restaurant(2, "987654321", "Dublin2");
-        // OrderDetail[] orderDetail2 = { new OrderDetail(3, 7.99, 2), new
-        // OrderDetail(4, 59.99, 4) };
-        // Order[] order1 = { new Order(restaurant1, orderDetail1), new
-        // Order(restaurant2, orderDetail2) };
-        // selection2.tell(new CustomerOrderMessage(new Customer(1, "Dublin1",
-        // "123456789"), order1), ref);
+         ActorSelection selection2 = system
+         .actorSelection("akka.tcp://order-system@localhost:2553/user/order-service");
+         System.out.println("user make an order to order system");
+         // V0.0.2 instantiate the restaurants object myself
+         Restaurant restaurant1 = new Restaurant(1, "123456789", "Dublin1");
+         OrderDetail[] orderDetail1 = { new OrderDetail(1, 18.88, 3), new
+         OrderDetail(2, 28.88, 5) };
+         Restaurant restaurant2 = new Restaurant(2, "987654321", "Dublin2");
+         OrderDetail[] orderDetail2 = { new OrderDetail(3, 7.99, 2), new
+         OrderDetail(4, 59.99, 4) };
+         Order[] order1 = { new Order(restaurant1, orderDetail1), new
+         Order(restaurant2, orderDetail2) };
+         selection2.tell(new CustomerOrderMessage(new Customer(1, "Dublin1",
+         "123456789"), order1), ref);
     }
 
     // get all username and password from database
