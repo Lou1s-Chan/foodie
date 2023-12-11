@@ -34,8 +34,6 @@ public class DeliveryService extends AbstractActor {
     }
 
     private void orderDelivery(OrderDeliveryMessage message) {
-        // TummySavior tummySavior = new TummySavior();
-        // boolean deliveryStatus = tummySavior.tummySaviorDelivered();
         scheduler = getContext().system().scheduler().schedule(
                 Duration.ofMillis(0),
                 Duration.ofSeconds(5),
@@ -60,22 +58,23 @@ public class DeliveryService extends AbstractActor {
     }
 
     private void checkDeliveryStatus(CheckDeliveryStatus message) {
-        ActorRef sender = getSender();
+        final ActorRef sender = getSender();
         executorService.submit(() -> {
             TummySavior tummySavior = new TummySavior();
             if(tummySavior.tummySaviorDelivered()) {
+                scheduler.cancel();
                 if(orderServiceActor != null) {
                     OrderDeliveredMessage orderDeliveredMessage = new OrderDeliveredMessage(
                             message.getOrderId(), "DELIVERED");
-                            orderServiceActor.tell(orderDeliveredMessage, getSelf());
+                    orderServiceActor.tell(orderDeliveredMessage, getSelf());
                 }
                 OrderDeliveringMessage orderDeliveringMessage = new OrderDeliveringMessage(
                         message.getOrderId(), "DELIVERED", "Order delivered");
-                        sender.tell(orderDeliveringMessage, getSelf());
+                sender.tell(orderDeliveringMessage, getSelf());
             } else {
                 OrderDeliveringMessage orderDeliveringMessage = new OrderDeliveringMessage(
                         message.getOrderId(), "UNDELIVERED", "Food undelivered yet");
-                        sender.tell(orderDeliveringMessage, getSelf());
+                sender.tell(orderDeliveringMessage, getSelf());
             }
         });
     }
