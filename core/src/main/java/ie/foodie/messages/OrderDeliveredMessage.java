@@ -1,14 +1,13 @@
 package ie.foodie.messages;
 
-public class PaymentConfirmMessage implements MessageSerializable {
+public class OrderDeliveredMessage {
     int orderId;
     String status;
 
-    public PaymentConfirmMessage(int orderId, String status) {
+    public OrderDeliveredMessage(int orderId, String status){
         this.orderId = orderId;
         this.status = status;
     }
-
     public int getOrderId() {
         return orderId;
     }
@@ -27,7 +26,7 @@ public class PaymentConfirmMessage implements MessageSerializable {
 
     @Override
     public String toString() {
-        return "PaymentConfirmMessage{" +
+        return "OrderDeliveredMessage{" +
                 "orderId=" + orderId +
                 ", status='" + status + '\'' +
                 '}';

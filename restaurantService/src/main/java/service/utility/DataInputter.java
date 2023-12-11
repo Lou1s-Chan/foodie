@@ -1,4 +1,4 @@
-package service;
+package service.utility;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -50,23 +50,21 @@ public class DataInputter {
 
     private static void insertSampleMenuItems(Connection conn) throws SQLException {
         String[] menuItems = {
-                "INSERT INTO menu_item (restaurant_id, name, description, price) VALUES (1, 'Margherita Pizza', 'Classic Margherita with fresh mozzarella and basil', 8.99);" +
-                "INSERT INTO menu_item (restaurant_id, name, description, price) VALUES (1, 'Spaghetti Carbonara', 'Creamy pasta with bacon and Parmesan cheese', 10.50);"+
-                "INSERT INTO menu_item (restaurant_id, name, description, price) VALUES (1, 'Caesar Salad', 'Crisp romaine lettuce with Caesar dressing and croutons', 7.00);"+
-                "INSERT INTO menu_item (restaurant_id, name, description, price) VALUES (1, 'Grilled Salmon', 'Grilled salmon fillet with a lemon butter sauce', 15.00);"+
-                "INSERT INTO menu_item (restaurant_id, name, description, price) VALUES (1, 'Tiramisu', 'Traditional Italian dessert with mascarpone and espresso', 6.50);"
-
+                "INSERT INTO menu_item (restaurant_id, name, description, price) VALUES (1, 'Margherita Pizza', 'Classic Margherita with fresh mozzarella and basil', 8.99)",
+                "INSERT INTO menu_item (restaurant_id, name, description, price) VALUES (1, 'Spaghetti Carbonara', 'Creamy pasta with bacon and Parmesan cheese', 10.50)",
+                "INSERT INTO menu_item (restaurant_id, name, description, price) VALUES (1, 'Caesar Salad', 'Crisp romaine lettuce with Caesar dressing and croutons', 7.00)",
+                "INSERT INTO menu_item (restaurant_id, name, description, price) VALUES (1, 'Grilled Salmon', 'Grilled salmon fillet with a lemon butter sauce', 15.00)",
+                "INSERT INTO menu_item (restaurant_id, name, description, price) VALUES (1, 'Tiramisu', 'Traditional Italian dessert with mascarpone and espresso', 6.50)"
         };
 
         try (Statement stmt = conn.createStatement()) {
             for (int restaurantId = 1; restaurantId <= 30; restaurantId++) {
                 for (String menuItem : menuItems) {
-                    // Replace restaurant_id in SQL with the current restaurantId
                     String sqlInsert = menuItem.replaceFirst("VALUES \\(1", "VALUES (" + restaurantId);
-                    System.out.println(sqlInsert);
                     stmt.executeUpdate(sqlInsert);
                 }
             }
         }
     }
+
 }
