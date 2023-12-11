@@ -60,7 +60,7 @@ public class OrderService extends AbstractActor {
                         // print out delivery message sent
 
                         System.out.println("******** Sending delivery message: ");
-                        OrderDeliveryMessage orderDeliveryMessage = new OrderDeliveryMessage(order, customerOrderMessage.getCustomer());
+                        OrderDeliveryMessage orderDeliveryMessage = new OrderDeliveryMessage(msg.getOrderId(), order, customerOrderMessage.getCustomer());
                         deliveryActor.tell(orderDeliveryMessage, getSelf());
                         MessagePrinter.printOrderDeliveryMessage(orderDeliveryMessage);
                     }
