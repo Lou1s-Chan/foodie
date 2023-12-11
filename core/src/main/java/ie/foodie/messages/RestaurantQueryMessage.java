@@ -1,6 +1,6 @@
 package ie.foodie.messages;
 
-public class RestaurantQueryMessage {
+public class RestaurantQueryMessage implements MessageSerializable {
     public enum QueryType {
         RESTAURANT_LIST,
         MENU_REQUEST
@@ -19,11 +19,11 @@ public class RestaurantQueryMessage {
         this.restaurantId = restaurantId;
     }
 
-    public QueryType getQueryType(){
+    public QueryType getQueryType() {
         return queryType;
     }
 
-    public Integer getRestaurantID(){
+    public Integer getRestaurantID() {
         return restaurantId;
     }
 }

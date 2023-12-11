@@ -2,7 +2,7 @@ package ie.foodie.messages;
 
 import java.util.List;
 
-public class RestaurantsResponse {
+public class RestaurantsResponse implements MessageSerializable {
     private final List<RestaurantData> restaurants;
 
     public RestaurantsResponse(List<RestaurantData> restaurants) {
@@ -90,5 +90,3 @@ public class RestaurantsResponse {
         }
     }
 }
-
-

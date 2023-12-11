@@ -9,11 +9,12 @@ import java.sql.*;
 
 public class Main {
     static ActorSystem system = ActorSystem.create("restaurant-system");
+
     public static void main(String[] args) {
         System.out.println("Running Restaurant Service");
 
         final Props ResQuoterProp = Props.create(ResQuoter.class);
-        final ActorRef ResQuoterRef = system.actorOf(ResQuoterProp, "restaurant-ref");
+        final ActorRef ResQuoterRef = system.actorOf(ResQuoterProp, "restaurant-service");
 
         try {
             String OrderPath = "akka.tcp://order-system@order-host:2553/user/order-service";
@@ -26,7 +27,6 @@ public class Main {
             e.printStackTrace();
         }
 
-
         try {
             Class.forName("org.sqlite.JDBC");
         } catch (ClassNotFoundException e) {
@@ -35,22 +35,21 @@ public class Main {
         String url = "jdbc:sqlite:restaurantService/database/restaurantdatabase.db";
         try (Connection conn = DriverManager.getConnection(url)) {
             if (conn != null) {
-//                listRestaurants(conn);
+                // listRestaurants(conn);
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
-
     private static void listRestaurants(Connection conn) {
-        String sqlGetRestaurants = "SELECT id, name FROM restaurants;";  // Adjusted to include 'name'
+        String sqlGetRestaurants = "SELECT id, name FROM restaurants;"; // Adjusted to include 'name'
 
         try (Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sqlGetRestaurants)) {
+                ResultSet rs = stmt.executeQuery(sqlGetRestaurants)) {
             while (rs.next()) {
                 int id = rs.getInt("id");
-                String name = rs.getString("name");  // Retrieves the 'name' column value
+                String name = rs.getString("name"); // Retrieves the 'name' column value
                 System.out.println("Restaurant ID: " + id + ", Name: " + name);
             }
         } catch (SQLException e) {

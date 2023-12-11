@@ -2,7 +2,7 @@ package ie.foodie.messages;
 
 import java.util.List;
 
-public class MenuItemsResponse {
+public class MenuItemsResponse implements MessageSerializable {
     private final List<MenuItemData> menuItems;
 
     public MenuItemsResponse(List<MenuItemData> menuItems) {
@@ -37,34 +37,35 @@ public class MenuItemsResponse {
             this.description = description;
         }
 
-        public int getItemId(){
+        public int getItemId() {
             return itemId;
         }
 
-        public String getItemName(){
+        public String getItemName() {
             return itemName;
         }
 
-        public double getPrice(){
+        public double getPrice() {
             return price;
         }
 
-        public String getDescription(){
+        public String getDescription() {
             return description;
         }
-        public void setItemId(int id){
+
+        public void setItemId(int id) {
             this.itemId = id;
         }
 
-        public void setItemName(String name){
+        public void setItemName(String name) {
             this.itemName = name;
         }
 
-        public void setPrice(double price){
+        public void setPrice(double price) {
             this.price = price;
         }
 
-        public void setDescription(String description){
+        public void setDescription(String description) {
             this.description = description;
         }
 
@@ -79,4 +80,3 @@ public class MenuItemsResponse {
         }
     }
 }
-
