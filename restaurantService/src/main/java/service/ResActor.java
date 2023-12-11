@@ -105,6 +105,7 @@ public class ResActor extends AbstractActor {
                     ActorRef sender = getSender();
                     System.out.println("Request received from customer service." + sender);
                     if (msg.getQueryType() == RestaurantQueryMessage.QueryType.RESTAURANT_LIST) {
+                        System.out.println("Restaurants list is requested.");
                         ArrayList<RestaurantData> restaurantList = new ArrayList<>();
                         try (Connection conn = ds.getConnection();
                                 PreparedStatement stmt = conn.prepareStatement("SELECT * FROM restaurants")) {
@@ -127,6 +128,7 @@ public class ResActor extends AbstractActor {
 
                         System.out.println("Restaurant List send back to user service " + sender);
                     } else if (msg.getQueryType() == RestaurantQueryMessage.QueryType.MENU_REQUEST) {
+                        System.out.println("Menu list is request for restaurant id: " + msg.getRestaurantID());
                         int restaurantId = msg.getRestaurantID();
                         ArrayList<MenuItemsResponse.MenuItemData> menuItemsList = new ArrayList<>();
                         try (Connection conn = ds.getConnection();
