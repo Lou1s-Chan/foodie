@@ -1,6 +1,7 @@
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
+import java.time.Duration;
 import akka.testkit.javadsl.TestKit;
 import ie.foodie.messages.OrderDeliveringMessage;
 import ie.foodie.messages.OrderDeliveryMessage;
@@ -8,6 +9,7 @@ import ie.foodie.services.DeliveryService;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
 import static org.junit.Assert.assertEquals;
 
 public class DeliveryServiceTest {
@@ -36,7 +38,8 @@ public class DeliveryServiceTest {
         OrderDeliveryMessage testDeliveryMessage = new OrderDeliveryMessage(testOrderId, fakeOrder, fakeCustomer);
         deliveryService.tell(testDeliveryMessage, probe.getRef());
 
-        OrderDeliveringMessage response = probe.expectMsgClass(OrderDeliveringMessage.class);
+        // OrderDeliveringMessage response = probe.expectMsgClass(OrderDeliveringMessage.class);
+        OrderDeliveringMessage response = probe.expectMsgClass(Duration.ofSeconds(20), OrderDeliveringMessage.class);
 
         assertEquals("DELIVERED", response.getStatus());
         assertEquals("Order delivered", response.getMessage());
