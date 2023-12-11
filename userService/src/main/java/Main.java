@@ -55,13 +55,13 @@ public class Main {
 
         // V0.0.3 once user successfully login, send message to RESTAURANT for menu
         ActorSelection selection1 = system
-                .actorSelection("akka.tcp://restaurant-system@restaurant-host:2551/user/restaurant-service");
+                .actorSelection("akka.tcp://restaurant-system@localhost:2551/user/restaurant-service");
         System.out.println("user make a query to restaurant system");
         // selection1.tell(new RestaurantQueryMessage("query"), ref);
 
         // send message to ORDER
         ActorSelection selection2 = system
-                .actorSelection("akka.tcp://order-system@order-host:2553/user/order-service");
+                .actorSelection("akka.tcp://order-system@localhost:2553/user/order-service");
         System.out.println("user make an order to order system");
         // V0.0.2 instantiate the restaurants object myself
         Restaurant restaurant1 = new Restaurant(1, "123456789", "Dublin1");
@@ -71,16 +71,6 @@ public class Main {
         Order[] order1 = { new Order(restaurant1, orderDetail1), new Order(restaurant2, orderDetail2) };
         selection2.tell(new CustomerOrderMessage(new Customer(1, "Dublin1", "123456789"), order1), ref);
     }
-
-
-
-
-
-
-
-
-
-
 
     // get all username and password from database
     private static HashMap<String, String> getNameAndPasword(Connection conn) throws SQLException {
