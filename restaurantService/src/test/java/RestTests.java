@@ -27,9 +27,9 @@ public class RestTests implements MessageSerializable {
         final TestKit probe = new TestKit(system);
 
         Order.OrderDetail[] orderDetails = new Order.OrderDetail[]{
-                new Order.OrderDetail(1056, 8.99, 2),
-                new Order.OrderDetail(1057, 10.50, 1),
-                new Order.OrderDetail(1058, 7, 3)
+                new Order.OrderDetail(1206, 8.99, 2),
+                new Order.OrderDetail(1207, 10.50, 1),
+                new Order.OrderDetail(1208, 7, 3)
         };
 
         RestaurantOrderMessage testOrder = new RestaurantOrderMessage(
@@ -39,13 +39,13 @@ public class RestTests implements MessageSerializable {
 
         RestaurantQueryMessage testQuery = new RestaurantQueryMessage(RestaurantQueryMessage.QueryType.RESTAURANT_LIST);
         RestaurantQueryMessage testMenuRequest = new RestaurantQueryMessage(RestaurantQueryMessage.QueryType.MENU_REQUEST, 1);
-//        subject.tell(testOrder, probe.getRef());
+        subject.tell(testOrder, probe.getRef());
 //        subject.tell(testQuery, probe.getRef());
-        subject.tell(testMenuRequest, probe.getRef());
+//        subject.tell(testMenuRequest, probe.getRef());
 
-//        String response = probe.expectMsgClass(Duration.ofSeconds(2), String.class);
+        String response = probe.expectMsgClass(Duration.ofSeconds(2), String.class);
 //        RestaurantsResponse response = probe.expectMsgClass(Duration.ofSeconds(2), RestaurantsResponse.class);
-        MenuItemsResponse response = probe.expectMsgClass(Duration.ofSeconds(2), MenuItemsResponse.class);
+//        MenuItemsResponse response = probe.expectMsgClass(Duration.ofSeconds(2), MenuItemsResponse.class);
         System.out.println(response);
     }
 }

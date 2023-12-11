@@ -35,7 +35,7 @@ public class Main {
         String url = "jdbc:sqlite:restaurantService/database/restaurantdatabase.db";
         try (Connection conn = DriverManager.getConnection(url)) {
             if (conn != null) {
-                listRestaurants(conn);
+//                listRestaurants(conn);
             }
         } catch (SQLException e) {
             e.printStackTrace();
