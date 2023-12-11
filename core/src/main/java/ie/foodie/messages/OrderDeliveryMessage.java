@@ -13,6 +13,8 @@ public class OrderDeliveryMessage implements MessageSerializable {
         this.order = order;
         this.customer = customer;
     }
+    public OrderDeliveryMessage() {
+    }
 
     public int getOrderId() {return orderId;}
     public void setOrderId(int orderId) {this.orderId = orderId;}

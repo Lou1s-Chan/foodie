@@ -1,15 +1,19 @@
 package ie.foodie.messages;
 
-import java.util.List;
+import java.util.ArrayList;
 
 public class RestaurantsResponse implements MessageSerializable {
-    private final List<RestaurantData> restaurants;
+    private final ArrayList<RestaurantData> restaurants;
 
-    public RestaurantsResponse(List<RestaurantData> restaurants) {
+    public RestaurantsResponse() {
+        this.restaurants = new ArrayList<RestaurantData>();
+    }
+
+    public RestaurantsResponse(ArrayList<RestaurantData> restaurants) {
         this.restaurants = restaurants;
     }
 
-    public List<RestaurantData> getRestaurants() {
+    public ArrayList<RestaurantData> getRestaurants() {
         return restaurants;
     }
 
@@ -23,7 +27,7 @@ public class RestaurantsResponse implements MessageSerializable {
         return sb.toString();
     }
 
-    public static class RestaurantData {
+    public static class RestaurantData implements MessageSerializable {
         private int id;
         private String name;
         private String address;
@@ -36,6 +40,10 @@ public class RestaurantsResponse implements MessageSerializable {
             this.address = address;
             this.description = description;
             this.website = website;
+        }
+
+        public RestaurantData(){
+
         }
 
         public int getId() {

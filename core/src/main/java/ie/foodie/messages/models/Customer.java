@@ -1,6 +1,8 @@
 package ie.foodie.messages.models;
 
-public class Customer {
+import ie.foodie.messages.MessageSerializable;
+
+public class Customer implements MessageSerializable {
     private int customerId;
     private String customerAddress;
     private String customerPhone;
@@ -9,6 +11,9 @@ public class Customer {
         this.customerId = customerId;
         this.customerAddress = customerAddress;
         this.customerPhone = customerPhone;
+    }
+
+    public Customer() {
     }
 
     public int getCustomerId() {

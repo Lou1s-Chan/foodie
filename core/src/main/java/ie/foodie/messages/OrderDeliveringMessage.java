@@ -1,14 +1,17 @@
 package ie.foodie.messages;
 
 public class OrderDeliveringMessage implements MessageSerializable {
-    private final int orderId;
-    private final String status;
-    private final String message;
+    private int orderId;
+    private String status;
+    private String message;
 
     public OrderDeliveringMessage(int orderId, String status, String message) {
         this.orderId = orderId;
         this.status = status;
         this.message = message;
+    }
+
+    public OrderDeliveringMessage() {
     }
 
     public int getOrderId() {

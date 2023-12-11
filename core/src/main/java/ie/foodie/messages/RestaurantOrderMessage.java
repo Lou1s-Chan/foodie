@@ -10,6 +10,8 @@ public class RestaurantOrderMessage implements MessageSerializable {
         this.customerId = customerId;
         this.order = order;
     }
+    public RestaurantOrderMessage() {
+    }
 
     public int getCustomerId() {
         return customerId;

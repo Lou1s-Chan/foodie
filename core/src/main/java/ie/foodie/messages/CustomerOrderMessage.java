@@ -11,6 +11,8 @@ public class CustomerOrderMessage implements MessageSerializable {
         this.customer = customer;
         this.orders = orders;
     }
+    public CustomerOrderMessage() {
+    }
 
     public Customer getCustomer() {
         return customer;

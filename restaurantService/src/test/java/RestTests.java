@@ -7,7 +7,7 @@ import ie.foodie.messages.models.Order;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import service.ResQuoter;
+import service.ResActor;
 
 import java.time.Duration;
 
@@ -22,7 +22,7 @@ public class RestTests implements MessageSerializable {
     }
     @Test
     public void quoterTest() {
-        final Props props = Props.create(ResQuoter.class);
+        final Props props = Props.create(ResActor.class);
         final ActorRef subject = system.actorOf(props);
         final TestKit probe = new TestKit(system);
 
