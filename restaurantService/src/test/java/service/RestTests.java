@@ -1,3 +1,5 @@
+package service;
+
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.testkit.javadsl.TestKit;
@@ -22,7 +24,8 @@ public class RestTests implements MessageSerializable {
     }
     @Test
     public void quoterTest() {
-        final Props props = Props.create(ResActor.class);
+        String pathToDB = "jdbc:sqlite:database/restaurantdatabase.db";
+        final Props props = Props.create(ResActor.class, pathToDB);
         final ActorRef subject = system.actorOf(props);
         final TestKit probe = new TestKit(system);
 
