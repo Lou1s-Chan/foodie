@@ -21,6 +21,10 @@ import service.UserActor;
 
 public class Main {
     public static void main(String[] args) {
+        // creating the system and actor for USER
+        ActorSystem system = ActorSystem.create("user-system");
+        final ActorRef ref = system.actorOf(Props.create(UserActor.class), "user-service");
+
         boolean loginSuccess = false;
         Scanner scanner = new Scanner(System.in);
 
@@ -46,6 +50,10 @@ public class Main {
                             loginSuccess = true;
                             // Initiate the customer with all details from the database
                             Customer user = getUserDetails(conn, entry.getKey());
+                            ActorSelection selection1 = system
+                                    .actorSelection(
+                                            "akka.tcp://user-system@localhost:2552/user/user-service");
+                            selection1.tell(user, ref);
                         }
                     }
 
@@ -60,35 +68,28 @@ public class Main {
             }
         }
 
-        // creating the system and actor for USER
-        ActorSystem system = ActorSystem.create("user-system");
-        final ActorRef ref = system.actorOf(Props.create(UserActor.class), "user-service");
-
         // V0.0.3 once user successfully login, send message to RESTAURANT for menu
 
-        ActorSelection selection1 = system
+        ActorSelection selection2 = system
                 .actorSelection("akka.tcp://restaurant-system@localhost:2551/user/restaurant-service");
         System.out.println("user make a query to restaurant system");
-        // selection1.tell(new
-        // RestaurantQueryMessage(RestaurantQueryMessage.QueryType.MENU_REQUEST, 1),
-        // ref);
-        selection1.tell(new RestaurantQueryMessage(RestaurantQueryMessage.QueryType.RESTAURANT_LIST), ref);
+        selection2.tell(new RestaurantQueryMessage(RestaurantQueryMessage.QueryType.RESTAURANT_LIST), ref);
 
-        // // send message to ORDER
-         ActorSelection selection2 = system
-         .actorSelection("akka.tcp://order-system@localhost:2553/user/order-service");
-         System.out.println("user make an order to order system");
-         // V0.0.2 instantiate the restaurants object myself
-         Restaurant restaurant1 = new Restaurant(1, "123456789", "Dublin1");
-         OrderDetail[] orderDetail1 = { new OrderDetail(1, 18.88, 3), new
-         OrderDetail(2, 28.88, 5) };
-         Restaurant restaurant2 = new Restaurant(2, "987654321", "Dublin2");
-         OrderDetail[] orderDetail2 = { new OrderDetail(3, 7.99, 2), new
-         OrderDetail(4, 59.99, 4) };
-         Order[] order1 = { new Order(restaurant1, orderDetail1), new
-         Order(restaurant2, orderDetail2) };
-         selection2.tell(new CustomerOrderMessage(new Customer(1, "Dublin1",
-         "123456789"), order1), ref);
+        // // // send message to ORDER
+        // ActorSelection selection2 = system
+        // .actorSelection("akka.tcp://order-system@localhost:2553/user/order-service");
+        // System.out.println("user make an order to order system");
+        // // V0.0.2 instantiate the restaurants object myself
+        // Restaurant restaurant1 = new Restaurant(1, "123456789", "Dublin1");
+        // OrderDetail[] orderDetail1 = { new OrderDetail(1, 18.88, 3), new
+        // OrderDetail(2, 28.88, 5) };
+        // Restaurant restaurant2 = new Restaurant(2, "987654321", "Dublin2");
+        // OrderDetail[] orderDetail2 = { new OrderDetail(3, 7.99, 2), new
+        // OrderDetail(4, 59.99, 4) };
+        // Order[] order1 = { new Order(restaurant1, orderDetail1), new
+        // Order(restaurant2, orderDetail2) };
+        // selection2.tell(new CustomerOrderMessage(new Customer(1, "Dublin1",
+        // "123456789"), order1), ref);
     }
 
     // get all username and password from database
