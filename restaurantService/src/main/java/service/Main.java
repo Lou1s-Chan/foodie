@@ -11,8 +11,8 @@ public class Main {
 
     public static void main(String[] args) {
         System.out.println("Running Restaurant Service");
-
-        final Props ResServiceProp = Props.create(ResActor.class);
+        String pathToDB = "jdbc:sqlite:restaurantService/database/restaurantdatabase.db";
+        final Props ResServiceProp = Props.create(ResActor.class, pathToDB);
         final ActorRef ResServiceRef = system.actorOf(ResServiceProp, "restaurant-service");
 
         try {

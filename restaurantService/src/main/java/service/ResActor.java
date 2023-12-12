@@ -18,9 +18,9 @@ public class ResActor extends AbstractActor {
     private String restaurantName = "Unknown";
     private final HikariDataSource ds;
 
-    public ResActor() {
+    public ResActor(String toDataBase) {
         this.ds = new HikariDataSource();
-        this.ds.setJdbcUrl("jdbc:sqlite:restaurantService/database/restaurantdatabase.db");
+        this.ds.setJdbcUrl(toDataBase);
     }
 
     private String getFoodName(int foodId) throws SQLException {
