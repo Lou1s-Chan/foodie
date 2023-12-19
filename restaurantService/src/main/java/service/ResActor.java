@@ -122,7 +122,6 @@ public class ResActor extends AbstractActor {
                         } catch (SQLException e) {
                             e.printStackTrace();
                         }
-                        System.out.println(restaurantList);
 
                         sender.tell(new RestaurantsResponse(restaurantList), getSelf());
 
