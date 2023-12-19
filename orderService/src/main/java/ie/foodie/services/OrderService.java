@@ -23,12 +23,12 @@ public class OrderService extends AbstractActor {
     }
 
     //for test
-//    public OrderService(ActorRef deliveryActor, ActorRef restaurantActor,
-//                        OrderDao orderDao) {
-//        this.deliveryActor = deliveryActor;
-//        this.restaurantActor = restaurantActor;
-//        this.orderDao = orderDao;
-//    }
+    public OrderService(ActorRef deliveryActor, ActorRef restaurantActor,
+                        OrderMongodbDao orderDao) {
+        this.deliveryActor = deliveryActor;
+        this.restaurantActor = restaurantActor;
+        this.orderDao = orderDao;
+    }
 
     @Override
     public Receive createReceive() {
@@ -52,7 +52,7 @@ public class OrderService extends AbstractActor {
                     boolean updatePaymentStatus = orderDao.updatePaymentStatus(msg);
                     if (!updatePaymentStatus) {
                         System.out.println("Update payment status for orderID " + msg.getOrderId() +
-                                "is not successful.");
+                                " is not successful.");
                     }
 
                     CustomerOrderMessage customerOrderMessage =

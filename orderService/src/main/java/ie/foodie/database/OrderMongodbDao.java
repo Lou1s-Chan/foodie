@@ -172,4 +172,11 @@ public class OrderMongodbDao {
         }
     }
 
+    public void dropDb() {
+        MongoCollection<Document> countersCollection = database.getCollection("counters");
+        MongoCollection<Document> ordersCollection = database.getCollection("orders");
+        countersCollection.drop();
+        ordersCollection.drop();
+    }
+
 }
