@@ -181,7 +181,7 @@ public class OrderDao {
         return rs.getInt(1);
     }
 
-    private static double calculateOrderTotalPrice(CustomerOrderMessage customerOrderMessage) {
+    public static double calculateOrderTotalPrice(CustomerOrderMessage customerOrderMessage) {
         // 1 calclulate total price and insert to orders table; get order ID
         double totalPrice = 0;
         for (Order order : customerOrderMessage.getOrders()) {
