@@ -1,7 +1,6 @@
 package ie.foodie.database;
 
 import ie.foodie.messages.CustomerOrderMessage;
-import ie.foodie.messages.OrderConfirmMessage;
 import ie.foodie.messages.PaymentConfirmMessage;
 import ie.foodie.messages.models.Customer;
 import ie.foodie.messages.models.Order;
@@ -12,6 +11,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Not in use
+ */
 public class OrderDao {
 
     private Connection connection = null;
@@ -128,24 +130,24 @@ public class OrderDao {
     }
 
     // Method to insert a CustomerOrderMessage into the database
-    public OrderConfirmMessage insertCustomerOrderMessage(CustomerOrderMessage customerOrderMessage) {
-        try {
-            double totalPrice = calculateOrderTotalPrice(customerOrderMessage);
-            int orderId = insertToOrdersTable(customerOrderMessage, totalPrice);
-            for (Order order: customerOrderMessage.getOrders()) {
-                insertToRestaurantTable(order);
-                insertToOrdersRestaurantFoodTable(order, orderId);
-            }
-            return new OrderConfirmMessage(orderId, totalPrice);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            System.err.println(e.getMessage());
-            throw new RuntimeException();
-        }
-    }
+//    public OrderConfirmMessage insertCustomerOrderMessage(CustomerOrderMessage customerOrderMessage) {
+//        try {
+//            double totalPrice = calculateOrderTotalPrice(customerOrderMessage);
+//            int orderId = insertToOrdersTable(customerOrderMessage, totalPrice);
+//            for (Order order: customerOrderMessage.getOrders()) {
+//                insertToRestaurantTable(order);
+//                insertToOrdersRestaurantFoodTable(order, orderId);
+//            }
+//            return new OrderConfirmMessage(orderId, totalPrice);
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//            System.err.println(e.getMessage());
+//            throw new RuntimeException();
+//        }
+//    }
 
     private void insertToOrdersRestaurantFoodTable(Order order, int orderId) throws SQLException {
-        for (Order.OrderDetail orderDetail: order.getOrderDetails()) {
+        for (Order.OrderDetail orderDetail : order.getOrderDetails()) {
             String insertToOrders = "INSERT INTO order_restaurant_foods(orderID, restaurantID, foodID, price, quantity) VALUES (?, ?, ?, ?, ?)";
             PreparedStatement pstmt = connection.prepareStatement(insertToOrders);
             pstmt.setInt(1, orderId);
@@ -179,17 +181,6 @@ public class OrderDao {
         pstmt.executeUpdate();
         ResultSet rs = connection.prepareStatement("select last_insert_rowid();").executeQuery();
         return rs.getInt(1);
-    }
-
-    public static double calculateOrderTotalPrice(CustomerOrderMessage customerOrderMessage) {
-        // 1 calclulate total price and insert to orders table; get order ID
-        double totalPrice = 0;
-        for (Order order : customerOrderMessage.getOrders()) {
-            for (Order.OrderDetail detail : order.getOrderDetails()) {
-                totalPrice += detail.getPrice() * detail.getQuantity();
-            }
-        }
-        return totalPrice;
     }
 
     // Updates the payment status of an order.

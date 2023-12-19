@@ -3,7 +3,6 @@ package ie.foodie.services;
 import akka.actor.AbstractActor;
 import akka.actor.ActorRef;
 import ie.foodie.actors.ActorProvider;
-import ie.foodie.database.OrderDao;
 import ie.foodie.database.OrderMongodbDao;
 import ie.foodie.messages.*;
 import ie.foodie.messages.models.Order;

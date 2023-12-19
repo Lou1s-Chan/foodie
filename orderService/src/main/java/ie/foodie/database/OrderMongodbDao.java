@@ -26,8 +26,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static ie.foodie.database.OrderDao.calculateOrderTotalPrice;
-
 public class OrderMongodbDao {
     private MongoDatabase database;
 
@@ -179,4 +177,14 @@ public class OrderMongodbDao {
         ordersCollection.drop();
     }
 
+    private static double calculateOrderTotalPrice(CustomerOrderMessage customerOrderMessage) {
+        // 1 calclulate total price and insert to orders table; get order ID
+        double totalPrice = 0;
+        for (Order order : customerOrderMessage.getOrders()) {
+            for (Order.OrderDetail detail : order.getOrderDetails()) {
+                totalPrice += detail.getPrice() * detail.getQuantity();
+            }
+        }
+        return totalPrice;
+    }
 }
