@@ -9,6 +9,8 @@ import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -93,7 +95,7 @@ public class MongoDBDataHandler {
     private static void insertDataIntoMenuItems(MongoDatabase database) {
         MongoCollection<Document> collection = database.getCollection("menu_items");
         collection.deleteMany(new Document()); // Clear existing data
-
+        int menu_item_counter = 0;
         // Define sample menu item data
         List<String> menuItems = new ArrayList<>();
         menuItems.add("Margherita Pizza,Classic Margherita with fresh mozzarella and basil,8.99");
@@ -117,14 +119,17 @@ public class MongoDBDataHandler {
                     double minPrice = basePrice - 2.0;
                     double maxPrice = basePrice + 2.0;
                     double price = minPrice + (maxPrice - minPrice) * random.nextDouble();
+                    BigDecimal roundedPrice = BigDecimal.valueOf(price).setScale(2, RoundingMode.HALF_UP);
 
                     Document menuItem = new Document()
+                            .append("id", menu_item_counter)
                             .append("restaurant_id", restaurantId)
                             .append("name", name)
                             .append("description", description)
-                            .append("price", price);
+                            .append("price", roundedPrice.doubleValue());
                     collection.insertOne(menuItem);
                 }
+                menu_item_counter += 1;
             }
         }
     }
