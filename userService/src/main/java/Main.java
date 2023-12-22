@@ -5,6 +5,16 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Scanner;
+
+import org.bson.Document;
+import org.bson.conversions.Bson;
+
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Filters;
+
 import java.util.Map;
 
 import akka.actor.ActorRef;
@@ -20,7 +30,27 @@ import ie.foodie.messages.models.Order.Restaurant;
 import service.UserActor;
 
 public class Main {
+
+    private static MongoClient mongoClient;
+    private static MongoDatabase database;
+    private static String dbURL = "mongodb+srv://foodie:ccOUvdosBLzDprGM@foodie.cli5iha.mongodb.net/?retryWrites=true&w=majority";
+    private static MongoCollection<Document> collection;
+    private static int TOKEN = 1;
+    private static HashMap<Integer, String> userList = new HashMap<>();
+
     public static void main(String[] args) {
+
+        // connect to MongoDB
+        mongoClient = MongoClients.create(dbURL);
+        database = mongoClient.getDatabase("foodie");
+        collection = database.getCollection("users");
+
+        try {
+            System.out.println("Connected to MongoDB collections successfully.");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         // creating the system and actor for USER
         ActorSystem system = ActorSystem.create("user-system");
         final ActorRef ref = system.actorOf(Props.create(UserActor.class), "user-service");
@@ -35,37 +65,49 @@ public class Main {
             String username = scanner.nextLine();
             System.out.print("Enter your password(password1): ");
             String password = scanner.nextLine();
-
-            // Compare user input to the database
-            String url = "jdbc:sqlite:userService/database/userdatabase.db";
-
-            try (Connection conn = DriverManager.getConnection(url)) {
-                if (conn != null) {
-                    HashMap<String, String> nameAndPassword = getNameAndPassword(conn);
-
-                    // Check if the entered credentials are valid
-                    for (Map.Entry<String, String> entry : nameAndPassword.entrySet()) {
-                        if (username.equals(entry.getKey()) && password.equals(entry.getValue())) {
-                            System.out.println("Login success!");
-                            loginSuccess = true;
-                            // Initiate the customer with all details from the database
-                            Customer user = getUserDetails(conn, entry.getKey());
-                            ActorSelection selection1 = system
-                                    .actorSelection(
-                                            "akka.tcp://user-system@localhost:2552/user/user-service");
-                            selection1.tell(user, ref);
-                        }
-                    }
-
-                    if (!loginSuccess) {
-                        System.out.println("Invalid username or password. Please try again.");
-                    }
-
-                    conn.close();
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
+            boolean exist = checkLogin(username, password);
+            if (exist) {
+                System.out.println("Login success!");
+                loginSuccess = true;
+                // Initiate the customer with all details from the database
+                Customer user = getUserDetails(username);
+                ActorSelection selection1 = system
+                        .actorSelection(
+                                "akka.tcp://user-system@localhost:2552/user/user-service");
+                selection1.tell(user, ref);
+            } else {
+                System.out.println("Invalid username or password. Please try again.");
             }
+            // // Compare user input to the database
+            // String url = "jdbc:sqlite:userService/database/userdatabase.db";
+
+            // try (Connection conn = DriverManager.getConnection(url)) {
+            // if (conn != null) {
+            // HashMap<String, String> nameAndPassword = getNameAndPassword(conn);
+
+            // // Check if the entered credentials are valid
+            // for (Map.Entry<String, String> entry : nameAndPassword.entrySet()) {
+            // if (username.equals(entry.getKey()) && password.equals(entry.getValue())) {
+            // System.out.println("Login success!");
+            // loginSuccess = true;
+            // // Initiate the customer with all details from the database
+            // Customer user = getUserDetails(conn, entry.getKey());
+            // ActorSelection selection1 = system
+            // .actorSelection(
+            // "akka.tcp://user-system@localhost:2552/user/user-service");
+            // selection1.tell(user, ref);
+            // }
+            // }
+
+            // if (!loginSuccess) {
+            // System.out.println("Invalid username or password. Please try again.");
+            // }
+
+            // conn.close();
+            // }
+            // } catch (SQLException e) {
+            // e.printStackTrace();
+            // }
         }
 
         // V0.0.3 once user successfully login, send message to RESTAURANT for menu
@@ -92,41 +134,71 @@ public class Main {
         // "123456789"), order1), ref);
     }
 
+    private static Boolean checkLogin(String username, String password) {
+        // Query to find documents with the specified username and password
+        Bson query = Filters.and(
+                Filters.eq("username", username),
+                Filters.eq("password", password));
+
+        // Execute the query
+        Document userDocument = collection.find(query).first();
+
+        // Check if a document with the specified username and password was found
+        return userDocument != null;
+    }
+
+    // // get user details from database
+    private static Customer getUserDetails(String username) {
+        Bson query = Filters.eq("username", username);
+
+        // Execute the query
+        Document userDocument = collection.find(query).first();
+        String address = userDocument.getString("address");
+        String phone = userDocument.getString("telephone");
+        userList.put(TOKEN, username);
+        Customer user = new Customer(TOKEN, address, phone);
+        TOKEN++;
+        return user;
+
+    }
+
     // get all username and password from database
-    private static HashMap<String, String> getNameAndPassword(Connection conn) throws SQLException {
-        HashMap<String, String> result = new HashMap<>();
-        String query = "SELECT username, password FROM user";
-        try (PreparedStatement preparedStatement = conn.prepareStatement(query);
-                ResultSet resultSet = preparedStatement.executeQuery()) {
-            while (resultSet.next()) {
-                String username = resultSet.getString("username");
-                String password = resultSet.getString("password");
-                result.put(username, password);
-            }
-        }
-        return result;
-    }
+    // private static HashMap<String, String> getNameAndPassword(Connection conn)
+    // throws SQLException {
+    // HashMap<String, String> result = new HashMap<>();
+    // String query = "SELECT username, password FROM user";
+    // try (PreparedStatement preparedStatement = conn.prepareStatement(query);
+    // ResultSet resultSet = preparedStatement.executeQuery()) {
+    // while (resultSet.next()) {
+    // String username = resultSet.getString("username");
+    // String password = resultSet.getString("password");
+    // result.put(username, password);
+    // }
+    // }
+    // return result;
+    // }
 
-    // get all user details from database
-    private static Customer getUserDetails(Connection conn, String username) throws SQLException {
-        String query = "SELECT user_id, address, phone FROM user WHERE username = ?";
+    // // get all user details from database
+    // private static Customer getUserDetails(Connection conn, String username)
+    // throws SQLException {
+    // String query = "SELECT user_id, address, phone FROM user WHERE username = ?";
 
-        try (PreparedStatement preparedStatement = conn.prepareStatement(query)) {
-            preparedStatement.setString(1, username);
+    // try (PreparedStatement preparedStatement = conn.prepareStatement(query)) {
+    // preparedStatement.setString(1, username);
 
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                if (resultSet.next()) {
-                    // User found, extract data and create a Customer object
-                    int userId = resultSet.getInt("user_id");
-                    String address = resultSet.getString("address");
-                    String phone = resultSet.getString("phone");
+    // try (ResultSet resultSet = preparedStatement.executeQuery()) {
+    // if (resultSet.next()) {
+    // // User found, extract data and create a Customer object
+    // int userId = resultSet.getInt("user_id");
+    // String address = resultSet.getString("address");
+    // String phone = resultSet.getString("phone");
 
-                    return new Customer(userId, address, phone);
-                } else {
-                    // User not found
-                    return null;
-                }
-            }
-        }
-    }
+    // return new Customer(userId, address, phone);
+    // } else {
+    // // User not found
+    // return null;
+    // }
+    // }
+    // }
+    // }
 }
