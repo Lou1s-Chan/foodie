@@ -9,7 +9,6 @@ import ie.foodie.messages.models.Order;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import service.ResActor;
 
 import java.time.Duration;
 
@@ -24,15 +23,14 @@ public class RestTests implements MessageSerializable {
     }
     @Test
     public void quoterTest() {
-        String pathToDB = "jdbc:sqlite:database/restaurantdatabase.db";
-        final Props props = Props.create(ResActor.class, pathToDB);
+        final Props props = Props.create(ResActor.class);
         final ActorRef subject = system.actorOf(props);
         final TestKit probe = new TestKit(system);
 
         Order.OrderDetail[] orderDetails = new Order.OrderDetail[]{
-                new Order.OrderDetail(1206, 8.99, 2),
-                new Order.OrderDetail(1207, 10.50, 1),
-                new Order.OrderDetail(1208, 7, 3)
+                new Order.OrderDetail(0, 8.99, 2),
+                new Order.OrderDetail(1, 10.50, 1),
+                new Order.OrderDetail(2, 7, 3)
         };
 
         RestaurantOrderMessage testOrder = new RestaurantOrderMessage(
@@ -41,14 +39,14 @@ public class RestTests implements MessageSerializable {
                         1, "555-1234", "123 Oak Street"), orderDetails));
 
         RestaurantQueryMessage testQuery = new RestaurantQueryMessage(RestaurantQueryMessage.QueryType.RESTAURANT_LIST);
-        RestaurantQueryMessage testMenuRequest = new RestaurantQueryMessage(RestaurantQueryMessage.QueryType.MENU_REQUEST, 1);
-        subject.tell(testOrder, probe.getRef());
+        RestaurantQueryMessage testMenuRequest = new RestaurantQueryMessage(RestaurantQueryMessage.QueryType.MENU_REQUEST, 3);
+//        subject.tell(testOrder, probe.getRef());
 //        subject.tell(testQuery, probe.getRef());
-//        subject.tell(testMenuRequest, probe.getRef());
+        subject.tell(testMenuRequest, probe.getRef());
 
-        String response = probe.expectMsgClass(Duration.ofSeconds(2), String.class);
+//        String response = probe.expectMsgClass(Duration.ofSeconds(2), String.class);
 //        RestaurantsResponse response = probe.expectMsgClass(Duration.ofSeconds(2), RestaurantsResponse.class);
-//        MenuItemsResponse response = probe.expectMsgClass(Duration.ofSeconds(2), MenuItemsResponse.class);
+        MenuItemsResponse response = probe.expectMsgClass(Duration.ofSeconds(2), MenuItemsResponse.class);
         System.out.println(response);
     }
 }
