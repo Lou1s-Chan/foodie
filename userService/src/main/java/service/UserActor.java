@@ -28,10 +28,11 @@ public class UserActor extends AbstractActor {
     private int restaurantId;
     private String restaurantAddress;
     private String restaurantPhone;
+    private ArrayList<OrderDetail> orderDetail = new ArrayList<>();
+    private Scanner scanner = new Scanner(System.in);
 
     @Override
     public Receive createReceive() {
-        System.out.println("**User service listener has been set up**\n");
         return new ReceiveBuilder()
                 .match(Customer.class,
                         msg -> {
@@ -55,11 +56,12 @@ public class UserActor extends AbstractActor {
                             }
                             while (true) {
                                 System.out.print("Enter a restaurant id to check its menu: ");
-                                Scanner scanner = new Scanner(System.in);
+
                                 // Check if the next input is an integer
                                 if (scanner.hasNextInt()) {
                                     int selectedRestaurantId = scanner.nextInt();
                                     if ((selectedRestaurantId > 0) && (selectedRestaurantId < 31)) {
+                                        scanner.nextLine();
                                         getSender().tell(
                                                 new RestaurantQueryMessage(
                                                         RestaurantQueryMessage.QueryType.MENU_REQUEST,
@@ -74,7 +76,6 @@ public class UserActor extends AbstractActor {
                                         }
 
                                         System.out.println("Menu request sent!");
-                                        scanner.close();
                                         break; // Exit the loop if a valid integer is entered
                                     } else {
                                         System.out.println("Invalid input. Please enter a valid integer.");
@@ -91,14 +92,48 @@ public class UserActor extends AbstractActor {
                             for (MenuItemsResponse.MenuItemData food : menuList) {
                                 System.out.println(food.toString());
                             }
+
+                            while (true) {
+                                boolean orderHandled = false;
+                                System.out.print("Enter the Id of the food you want to order: ");
+                                int userInput = scanner.nextInt();
+                                scanner.nextLine();
+                                for (OrderDetail food : orderDetail) {
+                                    if (userInput == food.getFoodId()) {
+                                        food.setQuantity(food.getQuantity() + 1);
+                                        orderHandled = true;
+                                    }
+                                }
+                                if (!orderHandled) {
+                                    for (MenuItemsResponse.MenuItemData food : menuList) {
+                                        if (userInput == food.getItemId()) {
+                                            orderDetail.add(new OrderDetail(food.getItemId(), food.getPrice(), 1));
+                                        }
+                                    }
+                                }
+                                System.out.println("Order added to your cart!");
+                                System.out.println("Current cart:");
+                                for (OrderDetail food : orderDetail) {
+                                    System.out.println("FoodID: " + food.getFoodId() + " Price: " + food.getPrice()
+                                            + " Quantity: " + food.getQuantity());
+                                }
+                                System.out.println(
+                                        "Enter 'Yes' to continue ordering, or 'No' to finish and send the order.");
+                                if (scanner.nextLine().toLowerCase().equals("no")) {
+                                    break;
+                                }
+                            }
                             ActorSystem system = getContext().getSystem();
                             ActorSelection orderSystem = system
                                     .actorSelection("akka.tcp://order-system@localhost:2553/user/order-service");
                             System.out.println("user make an order to order system");
 
-                            Restaurant restaurant = new Restaurant(restaurantId, restaurantPhone, restaurantAddress);
-                            OrderDetail[] orderDetail = { new OrderDetail(1, 18.88, 3), new OrderDetail(2, 28.88, 5) };
-                            Order[] order = { new Order(restaurant, orderDetail) };
+                            Restaurant restaurant = new Restaurant(restaurantId, restaurantPhone,
+                                    restaurantAddress);
+                            // OrderDetail[] orderDetail = { new OrderDetail(1, 18.88, 3), new
+                            // OrderDetail(2, 28.88, 5) };
+                            ArrayList<Order> order = new ArrayList<>();
+                            order.add(new Order(restaurant, orderDetail));
                             orderSystem.tell(new CustomerOrderMessage(
                                     new Customer(customerId, customerAddress, customerPhone), order), getSelf());
                         })

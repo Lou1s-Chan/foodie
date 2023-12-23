@@ -87,7 +87,6 @@ public class OrderMongodbDao {
                 .append("orderDetails", orderDetailsList)
                 .append("status", "Pending");
 
-
         ordersCollection.insertOne(orderDoc);
 
         return new OrderConfirmMessage(orderId, orderDoc.getDouble("totalPrice"));
@@ -98,13 +97,12 @@ public class OrderMongodbDao {
         Document counter = countersCollection.findOneAndUpdate(
                 Filters.eq("_id", name),
                 Updates.inc("seq", 1),
-                new FindOneAndUpdateOptions().upsert(true).returnDocument(ReturnDocument.AFTER)
-        );
+                new FindOneAndUpdateOptions().upsert(true).returnDocument(ReturnDocument.AFTER));
 
-        // If counter document doesn't exist, it will be created with a sequence number of 1
+        // If counter document doesn't exist, it will be created with a sequence number
+        // of 1
         return counter != null ? counter.getInteger("seq") : 1;
     }
-
 
     public CustomerOrderMessage selectByOrderId(int orderId) {
         MongoCollection<Document> ordersCollection = database.getCollection("orders");
@@ -130,8 +128,7 @@ public class OrderMongodbDao {
                 Order.Restaurant restaurant = new Order.Restaurant(
                         restaurantDoc.getInteger("restaurantId"),
                         restaurantDoc.getString("restaurantPhone"),
-                        restaurantDoc.getString("restaurantAddress")
-                );
+                        restaurantDoc.getString("restaurantAddress"));
 
                 List<Order.OrderDetail> orderDetails = new ArrayList<>();
                 List<Document> detailsList = (List<Document>) detailDoc.get("details");
@@ -139,16 +136,15 @@ public class OrderMongodbDao {
                     Order.OrderDetail orderDetail = new Order.OrderDetail(
                             d.getInteger("foodId"),
                             d.getDouble("price"),
-                            d.getInteger("quantity")
-                    );
+                            d.getInteger("quantity"));
                     orderDetails.add(orderDetail);
                 }
 
-                orders.add(new Order(restaurant, orderDetails.toArray(new Order.OrderDetail[0])));
+                orders.add(new Order(restaurant, new ArrayList<>(orderDetails)));
             }
         }
 
-        return new CustomerOrderMessage(customer, orders.toArray(new Order[0]));
+        return new CustomerOrderMessage(customer, new ArrayList<>(orders));
     }
 
     public boolean updatePaymentStatus(PaymentConfirmMessage paymentConfirmMessage) {
