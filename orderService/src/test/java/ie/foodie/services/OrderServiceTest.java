@@ -12,6 +12,7 @@ import org.junit.*;
 import scala.concurrent.duration.Duration;
 import scala.concurrent.duration.FiniteDuration;
 
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 public class OrderServiceTest {
@@ -92,13 +93,13 @@ public class OrderServiceTest {
         };
 
         // Create orders for each restaurant
-        Order order1 = new Order(restaurant1, detailsForRestaurant1);
-        Order order2 = new Order(restaurant2, detailsForRestaurant2);
+        Order order1 = new Order(restaurant1, Arrays.asList(detailsForRestaurant1));
+        Order order2 = new Order(restaurant2, Arrays.asList(detailsForRestaurant2));
 
         // Array of orders
         Order[] orders = {order1, order2};
 
         // Create the CustomerOrderMessage
-        return new CustomerOrderMessage(customer, orders);
+        return new CustomerOrderMessage(customer, Arrays.asList(orders));
     }
 }
