@@ -1,9 +1,11 @@
 import ie.foodie.messages.models.Order;
 
+import java.util.Arrays;
+
 public class FakeOrder extends Order {
 
     public FakeOrder() {
-        super(new Restaurant(123, "555-0123", "123 Test Street"), createFakeOrderDetails());
+        super(new Restaurant(123, "555-0123", "123 Test Street"), Arrays.asList(createFakeOrderDetails()));
     }
 
     private static OrderDetail[] createFakeOrderDetails() {
