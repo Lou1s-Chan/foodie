@@ -1,15 +1,18 @@
 package ie.foodie.messages.models;
 
+import java.util.List;
+
 import ie.foodie.messages.MessageSerializable;
 
 public class Order implements MessageSerializable {
     private Restaurant restaurant;
-    private OrderDetail[] orderDetails;
+    private List<OrderDetail> orderDetails;
 
-    public Order(Restaurant restaurant, OrderDetail[] orderDetails) {
+    public Order(Restaurant restaurant, List<OrderDetail> orderDetails) {
         this.restaurant = restaurant;
         this.orderDetails = orderDetails;
     }
+
     public Order() {
     }
 
@@ -21,11 +24,11 @@ public class Order implements MessageSerializable {
         this.restaurant = restaurant;
     }
 
-    public OrderDetail[] getOrderDetails() {
+    public List<OrderDetail> getOrderDetails() {
         return orderDetails;
     }
 
-    public void setOrderDetails(OrderDetail[] orderDetails) {
+    public void setOrderDetails(List<OrderDetail> orderDetails) {
         this.orderDetails = orderDetails;
     }
 

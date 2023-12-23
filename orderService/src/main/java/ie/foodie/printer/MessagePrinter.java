@@ -1,11 +1,14 @@
 package ie.foodie.printer;
 
+import java.util.List;
+
 import ie.foodie.messages.CustomerOrderMessage;
 import ie.foodie.messages.OrderDeliveryMessage;
 import ie.foodie.messages.PaymentConfirmMessage;
 import ie.foodie.messages.RestaurantOrderMessage;
 import ie.foodie.messages.models.Customer;
 import ie.foodie.messages.models.Order;
+import ie.foodie.messages.models.Order.OrderDetail;
 
 public class MessagePrinter {
 
@@ -38,7 +41,7 @@ public class MessagePrinter {
             System.out.println("Restaurant details are not available.");
         }
 
-        Order.OrderDetail[] orderDetails = order.getOrderDetails();
+        List<OrderDetail> orderDetails = order.getOrderDetails();
         if (orderDetails != null) {
             System.out.println("\nOrder Details:");
             for (Order.OrderDetail detail : orderDetails) {
@@ -51,6 +54,7 @@ public class MessagePrinter {
         }
         System.out.println();
     }
+
     public static void printPaymentConfirmMessage(PaymentConfirmMessage message) {
         if (message == null) {
             System.out.println("Payment Confirm Message is null.");
@@ -61,6 +65,7 @@ public class MessagePrinter {
             System.out.println();
         }
     }
+
     public static void printCustomerOrderMessage(CustomerOrderMessage customerOrderMessage) {
         if (customerOrderMessage == null) {
             System.out.println("No Customer Order Message available.");
@@ -73,8 +78,8 @@ public class MessagePrinter {
         System.out.println("Customer Address: " + customer.getCustomerAddress());
         System.out.println("Customer Phone: " + customer.getCustomerPhone());
 
-        Order[] orders = customerOrderMessage.getOrders();
-        if (orders == null || orders.length == 0) {
+        List<Order> orders = customerOrderMessage.getOrders();
+        if (orders == null || orders.size() == 0) {
             System.out.println("No customer order details available.");
             return;
         }
@@ -86,15 +91,16 @@ public class MessagePrinter {
             System.out.println("Restaurant Phone: " + restaurant.getRestaurantPhone());
             System.out.println("Restaurant Address: " + restaurant.getRestaurantAddress());
 
-            Order.OrderDetail[] orderDetails = order.getOrderDetails();
-            if (orderDetails == null || orderDetails.length == 0) {
+            List<OrderDetail> orderDetails = order.getOrderDetails();
+            if (orderDetails == null || orderDetails.size() == 0) {
                 System.out.println("No order details available for this restaurant.");
                 continue;
             }
 
             System.out.println("\nFood Ordered:");
             for (Order.OrderDetail detail : orderDetails) {
-                System.out.println(" - Food ID: " + detail.getFoodId() + ", Price: " + detail.getPrice() + ", Quantity: " + detail.getQuantity());
+                System.out.println(" - Food ID: " + detail.getFoodId() + ", Price: " + detail.getPrice()
+                        + ", Quantity: " + detail.getQuantity());
             }
             System.out.println("******************************************");
         }

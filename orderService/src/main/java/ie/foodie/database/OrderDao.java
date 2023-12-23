@@ -90,17 +90,20 @@ public class OrderDao {
                 return null; // Order not found
             }
 
-            Customer customer = new Customer(orderRs.getInt("customerID"), orderRs.getString("customerAddress"), orderRs.getString("customerPhone"));
+            Customer customer = new Customer(orderRs.getInt("customerID"), orderRs.getString("customerAddress"),
+                    orderRs.getString("customerPhone"));
 
             // Fetch order details
-            PreparedStatement detailStmt = connection.prepareStatement("SELECT * FROM order_restaurant_foods WHERE orderID = ?");
+            PreparedStatement detailStmt = connection
+                    .prepareStatement("SELECT * FROM order_restaurant_foods WHERE orderID = ?");
             detailStmt.setInt(1, orderId);
             ResultSet detailRs = detailStmt.executeQuery();
 
             Map<Integer, List<Order.OrderDetail>> restaurantDetails = new HashMap<>();
             while (detailRs.next()) {
                 int restaurantId = detailRs.getInt("restaurantID");
-                Order.OrderDetail detail = new Order.OrderDetail(detailRs.getInt("foodID"), detailRs.getDouble("price"), detailRs.getInt("quantity"));
+                Order.OrderDetail detail = new Order.OrderDetail(detailRs.getInt("foodID"), detailRs.getDouble("price"),
+                        detailRs.getInt("quantity"));
 
                 restaurantDetails.computeIfAbsent(restaurantId, k -> new ArrayList<>()).add(detail);
             }
@@ -112,17 +115,19 @@ public class OrderDao {
                 List<Order.OrderDetail> details = entry.getValue();
 
                 // Fetch restaurant details (assuming a restaurants table exists)
-                PreparedStatement restStmt = connection.prepareStatement("SELECT * FROM restaurants WHERE restaurantID = ?");
+                PreparedStatement restStmt = connection
+                        .prepareStatement("SELECT * FROM restaurants WHERE restaurantID = ?");
                 restStmt.setInt(1, restaurantId);
                 ResultSet restRs = restStmt.executeQuery();
 
                 if (restRs.next()) {
-                    Order.Restaurant restaurant = new Order.Restaurant(restaurantId, restRs.getString("restaurantPhone"), restRs.getString("restaurantAddress"));
-                    orders.add(new Order(restaurant, details.toArray(new Order.OrderDetail[0])));
+                    Order.Restaurant restaurant = new Order.Restaurant(restaurantId,
+                            restRs.getString("restaurantPhone"), restRs.getString("restaurantAddress"));
+                    orders.add(new Order(restaurant, new ArrayList<>(details)));
                 }
             }
 
-            return new CustomerOrderMessage(customer, orders.toArray(new Order[0]));
+            return new CustomerOrderMessage(customer, new ArrayList<>(orders));
         } catch (SQLException e) {
             System.err.println("Query failed: " + e.getMessage());
             return null;
@@ -130,21 +135,22 @@ public class OrderDao {
     }
 
     // Method to insert a CustomerOrderMessage into the database
-//    public OrderConfirmMessage insertCustomerOrderMessage(CustomerOrderMessage customerOrderMessage) {
-//        try {
-//            double totalPrice = calculateOrderTotalPrice(customerOrderMessage);
-//            int orderId = insertToOrdersTable(customerOrderMessage, totalPrice);
-//            for (Order order: customerOrderMessage.getOrders()) {
-//                insertToRestaurantTable(order);
-//                insertToOrdersRestaurantFoodTable(order, orderId);
-//            }
-//            return new OrderConfirmMessage(orderId, totalPrice);
-//        } catch (SQLException e) {
-//            e.printStackTrace();
-//            System.err.println(e.getMessage());
-//            throw new RuntimeException();
-//        }
-//    }
+    // public OrderConfirmMessage insertCustomerOrderMessage(CustomerOrderMessage
+    // customerOrderMessage) {
+    // try {
+    // double totalPrice = calculateOrderTotalPrice(customerOrderMessage);
+    // int orderId = insertToOrdersTable(customerOrderMessage, totalPrice);
+    // for (Order order: customerOrderMessage.getOrders()) {
+    // insertToRestaurantTable(order);
+    // insertToOrdersRestaurantFoodTable(order, orderId);
+    // }
+    // return new OrderConfirmMessage(orderId, totalPrice);
+    // } catch (SQLException e) {
+    // e.printStackTrace();
+    // System.err.println(e.getMessage());
+    // throw new RuntimeException();
+    // }
+    // }
 
     private void insertToOrdersRestaurantFoodTable(Order order, int orderId) throws SQLException {
         for (Order.OrderDetail orderDetail : order.getOrderDetails()) {
