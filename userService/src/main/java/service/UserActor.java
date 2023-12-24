@@ -13,6 +13,8 @@ import akka.japi.pf.ReceiveBuilder;
 import ie.foodie.messages.CustomerOrderMessage;
 import ie.foodie.messages.MenuItemsResponse;
 import ie.foodie.messages.OrderConfirmMessage;
+import ie.foodie.messages.OrderPaymentMessage;
+import ie.foodie.messages.PaymentStatusMessage;
 import ie.foodie.messages.RestaurantQueryMessage;
 import ie.foodie.messages.RestaurantsResponse;
 import ie.foodie.messages.RestaurantsResponse.RestaurantData;
@@ -31,6 +33,16 @@ public class UserActor extends AbstractActor {
     private ArrayList<OrderDetail> orderDetail = new ArrayList<>();
     private Scanner scanner = new Scanner(System.in);
 
+    private ActorRef paymentServiceActor;  
+
+    public UserActor(ActorRef paymentServiceActor) {
+        this.paymentServiceActor = paymentServiceActor;
+    }
+
+    public static Props props(ActorRef paymentServiceActor) {
+        return Props.create(UserActor.class, () -> new UserActor(paymentServiceActor));
+    }
+
     @Override
     public Receive createReceive() {
         return new ReceiveBuilder()
@@ -42,11 +54,28 @@ public class UserActor extends AbstractActor {
                         })
                 .match(OrderConfirmMessage.class,
                         msg -> {
-                            // message to payment
-                            // foodOrder = msg.getInfo();
-                            // paymentActorRef.tell(new PaymentMessage(paymentDetail, foodOrder),
-                            // getSelf());
+                            // Use the totalPrice from OrderConfirmMessage
+                            double amountToPay = msg.getTotalPrice();
+                            int orderId = msg.getOrderId();
+
+                            System.out.print("Enter payment method (Card/Cash): ");
+                            String paymentMethod = scanner.nextLine().trim();
+                        
+                            // Validate input and default to Card if invalid
+                            if (!paymentMethod.equalsIgnoreCase("Card") && !paymentMethod.equalsIgnoreCase("Cash")) {
+                                System.out.println("Invalid input. Defaulting to Card.");
+                                paymentMethod = "Card";
+                            }
+                        
+                            OrderPaymentMessage paymentMessage = new OrderPaymentMessage(orderId, amountToPay, paymentMethod);
+                            paymentServiceActor.tell(paymentMessage, getSelf());
                         })
+                .match(PaymentStatusMessage.class, msg -> {
+                    // Handle the payment status message
+                    System.out.println("Payment Status for Order ID " + msg.getOrderId() + ": " 
+                                       + msg.getStatus() + " - " + msg.getMessage());
+                    // Additional logic based on the payment status
+                })
                 .match(RestaurantsResponse.class,
                         msg -> {
                             System.out.println("Received back Restaurant Response...");
