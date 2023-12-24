@@ -1,17 +1,17 @@
 package service;
 
+import actors.ActorProvider;
 import akka.actor.AbstractActor;
 import akka.actor.ActorRef;
+import akka.actor.ActorSelection;
+import akka.actor.ActorSystem;
 import ie.foodie.messages.*;
 
 public class PaymentService extends AbstractActor {
 
-    private final ActorRef orderServiceActor;
-
-    // Constructor for cases where OrderService actor is known
-    public PaymentService(ActorRef orderServiceActor) {
-        this.orderServiceActor = orderServiceActor;
-    }
+    ActorSystem system = getContext().getSystem();
+    ActorSelection orderServiceActor = ActorProvider.getOrderServiceActor(system);
+    ActorSelection userActor = ActorProvider.getUserActor(system);
 
     // Default constructor for cases where OrderService actor is not needed initially
     public PaymentService() {

@@ -33,14 +33,10 @@ public class UserActor extends AbstractActor {
     private ArrayList<OrderDetail> orderDetail = new ArrayList<>();
     private Scanner scanner = new Scanner(System.in);
 
-    private ActorRef paymentServiceActor;  
+    private ActorSelection paymentServiceActor;
 
-    public UserActor(ActorRef paymentServiceActor) {
-        this.paymentServiceActor = paymentServiceActor;
-    }
-
-    public static Props props(ActorRef paymentServiceActor) {
-        return Props.create(UserActor.class, () -> new UserActor(paymentServiceActor));
+    public UserActor(ActorSystem system) {
+        this.paymentServiceActor = system.actorSelection("akka.tcp://payment-system@localhost:2555/user/payment-service");
     }
 
     @Override
@@ -69,6 +65,8 @@ public class UserActor extends AbstractActor {
                         
                             OrderPaymentMessage paymentMessage = new OrderPaymentMessage(orderId, amountToPay, paymentMethod);
                             paymentServiceActor.tell(paymentMessage, getSelf());
+                            // paymentServiceActor.tell(paymentMessage, ref);
+
                         })
                 .match(PaymentStatusMessage.class, msg -> {
                     // Handle the payment status message

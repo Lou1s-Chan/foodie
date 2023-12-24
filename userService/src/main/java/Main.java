@@ -53,7 +53,8 @@ public class Main {
 
         // creating the system and actor for USER
         ActorSystem system = ActorSystem.create("user-system");
-        final ActorRef ref = system.actorOf(Props.create(UserActor.class), "user-service");
+        // final ActorRef ref = system.actorOf(Props.create(UserActor.class), "user-service");
+        final ActorRef ref = system.actorOf(Props.create(UserActor.class, system), "user-service");
 
         boolean loginSuccess = false;
         Scanner scanner = new Scanner(System.in);
