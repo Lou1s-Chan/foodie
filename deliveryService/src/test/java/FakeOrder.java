@@ -11,9 +11,9 @@ public class FakeOrder extends Order {
 
     private static List<OrderDetail> createFakeOrderDetails() {
         // Create some fake order details
-        OrderDetail[] orderDetails = new OrderDetail[2];
-        orderDetails[0] = new OrderDetail(1, 9.99, 2); // Example item 1
-        orderDetails[1] = new OrderDetail(2, 14.99, 1); // Example item 2
-        return Arrays.asList(orderDetails);
+        return Arrays.asList(
+                new OrderDetail(1, 9.99, 2),
+                new OrderDetail(2, 14.99, 1)
+        );
     }
 }
