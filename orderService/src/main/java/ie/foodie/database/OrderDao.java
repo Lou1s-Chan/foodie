@@ -1,7 +1,7 @@
 package ie.foodie.database;
 
 import ie.foodie.messages.CustomerOrderMessage;
-import ie.foodie.messages.PaymentConfirmMessage;
+import ie.foodie.messages.PaymentStatusMessage;
 import ie.foodie.messages.models.Customer;
 import ie.foodie.messages.models.Order;
 
@@ -190,12 +190,27 @@ public class OrderDao {
     }
 
     // Updates the payment status of an order.
-    public boolean updatePaymentStatus(PaymentConfirmMessage paymentConfirmMessage) {
+    // public boolean updatePaymentStatus(PaymentConfirmMessage paymentConfirmMessage) {
+    //     String updateStatusSql = "UPDATE orders SET status = ? WHERE orderID = ?";
+
+    //     try (PreparedStatement pstmt = connection.prepareStatement(updateStatusSql)) {
+    //         pstmt.setString(1, paymentConfirmMessage.getStatus());
+    //         pstmt.setInt(2, paymentConfirmMessage.getOrderId());
+    //         int affectedRows = pstmt.executeUpdate();
+
+    //         return affectedRows > 0;
+    //     } catch (SQLException e) {
+    //         System.err.println("Updating payment status failed: " + e.getMessage());
+    //         return false;
+    //     }
+    // }
+
+    public boolean updatePaymentStatus(PaymentStatusMessage paymentStatusMessage) {
         String updateStatusSql = "UPDATE orders SET status = ? WHERE orderID = ?";
 
         try (PreparedStatement pstmt = connection.prepareStatement(updateStatusSql)) {
-            pstmt.setString(1, paymentConfirmMessage.getStatus());
-            pstmt.setInt(2, paymentConfirmMessage.getOrderId());
+            pstmt.setString(1, paymentStatusMessage.getStatus());
+            pstmt.setInt(2, paymentStatusMessage.getOrderId());
             int affectedRows = pstmt.executeUpdate();
 
             return affectedRows > 0;
