@@ -65,8 +65,6 @@ public class UserActor extends AbstractActor {
                         
                             OrderPaymentMessage paymentMessage = new OrderPaymentMessage(orderId, amountToPay, paymentMethod);
                             paymentServiceActor.tell(paymentMessage, getSelf());
-                            // paymentServiceActor.tell(paymentMessage, ref);
-
                         })
                 .match(PaymentStatusMessage.class, msg -> {
                     // Handle the payment status message

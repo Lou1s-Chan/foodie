@@ -12,8 +12,9 @@ public class ActorProvider {
     }
 
     public static ActorSelection getUserActor(ActorSystem system) {
-        String userServiceHost = "localhost"; // Update with actual host if different
-        int userServicePort = 2552; // Update with actual port if different
+        String userServiceHost = "localhost";
+        int userServicePort = 2552;
         return system.actorSelection("akka.tcp://user-system@" + userServiceHost + ":" + userServicePort + "/user/user-service");
     }
 }
+

@@ -44,7 +44,8 @@ public class OrderService extends AbstractActor {
 
                     getSender().tell(orderConfirmMessage, getSelf());
                 })
-                .match(PaymentConfirmMessage.class, msg -> {
+                // .match(PaymentConfirmMessage.class, msg -> {
+                .match(PaymentStatusMessage.class, msg -> {                        
                     System.out.println("******** Received payment message: ");
                     MessagePrinter.printPaymentConfirmMessage(msg);
                     // change status in db

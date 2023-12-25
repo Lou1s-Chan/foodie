@@ -7,7 +7,7 @@ public class Main {
     public static void main(String[] args) {
         
         ActorSystem system = ActorSystem.create("payment-system");
-        ActorRef orderActorRef = system.actorOf(Props.create(PaymentService.class), "payment-service");
+        ActorRef paymentActorRef = system.actorOf(Props.create(PaymentService.class), "payment-service");
         System.out.println("Payment service starts");
         
     }
