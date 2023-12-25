@@ -6,12 +6,11 @@ import akka.actor.Props;
 import ie.foodie.services.DeliveryService;
 
 public class Main {
+    static ActorSystem system = ActorSystem.create("delivery-system");
     public static void main(String[] args) {
-        ActorSystem system = ActorSystem.create("delivery-system");
-
-        ActorRef deliveryActorRef
-                = system.actorOf(Props.create(DeliveryService.class), "delivery-service");
-
-        System.out.println("Delivery service starts");
+        final Props DeliveryServiceProp = Props.create(DeliveryService.class);
+        final ActorRef deliveryServiceRef
+                = system.actorOf(DeliveryServiceProp, "delivery-service");
+        System.out.println("Delivery service starts.");
     }
 }

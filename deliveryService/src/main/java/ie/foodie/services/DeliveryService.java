@@ -1,84 +1,46 @@
 package ie.foodie.services;
-
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ExecutorService;
-
-import akka.actor.AbstractActor;
+import akka.actor.AbstractActorWithTimers;
 import akka.actor.ActorRef;
-import akka.actor.Cancellable;
-import com.mongodb.client.model.Aggregates;
-import com.mongodb.client.model.Field;
-import com.mongodb.client.model.Filters;
 import ie.foodie.messages.*;
-
-import java.time.Duration;
-
-import com.mongodb.client.*;
-import com.mongodb.client.model.Sorts;
-
 import org.bson.Document;
 
-public class DeliveryService extends AbstractActor {
-    private final ActorRef orderServiceActor;
+public class DeliveryService extends AbstractActorWithTimers {
+    private ActorRef orderServiceActor;
+    private TummySavior tummySavior = new TummySavior();
+    public DeliveryService() {this.orderServiceActor = null;}
 
-    public DeliveryService(MongoClient mongoClient, MongoDatabase mongoDatabase) {
-        this.mongoClient = mongoClient;
-        this.mongoDatabase = mongoDatabase;
-        this.orderServiceActor = null;
-    }
-
-    public DeliveryService(ActorRef orderServiceActor, MongoClient mongoClient, MongoDatabase mongoDatabase) {
-
+    public DeliveryService(ActorRef orderServiceActor){
         this.orderServiceActor = orderServiceActor;
-        this.mongoClient = mongoClient;
-        this.mongoDatabase = mongoDatabase;
-    }
-
-    private final MongoClient mongoClient;
-    private final MongoDatabase mongoDatabase;
-    private final String mgdbURL = "mongodb+srv://foodie:ccOUvdosBLzDprGM@foodie.cli5iha.mongodb.net/?retryWrites=true&w=majority";
-
-    public DeliveryService(String mgdbUrlArg, ActorRef orderServiceActor){
-        this.orderServiceActor = orderServiceActor;
-        String finalMgdbUrl = !mgdbUrlArg.isEmpty() ? mgdbUrlArg: this.mgdbURL;
-        this.mongoClient = MongoClients.create(finalMgdbUrl);
-        this.mongoDatabase = mongoClient.getDatabase("foodie");
-        try {
-            mongoDatabase.listCollectionNames().first();
-            System.out.println("Contact Driver Database Successfully!");
-        } catch (Exception e) { e.printStackTrace();}
-    }
-
-    public class driverMatcher{
-        List<Field<?>> fields = Arrays.asList(
-                new Field<>("match_score",
-                        new Document("$multiply",
-                                Arrays.asList("$location_parameter", "$rating")))
-        );
-        MongoCollection<Document> collection = mongoDatabase.getCollection("drivers");
-        Document bestDriver = collection.aggregate(Arrays.asList(
-                Aggregates.match(Filters.eq("availability", "free")),
-                Aggregates.addFields(fields),
-                Aggregates.sort(Sorts.ascending("match_score")),
-                Aggregates.limit(1)
-        )).first();
+        this.tummySavior = new TummySavior();
     }
 
     @Override
     public Receive createReceive(){
         return receiveBuilder()
-                .match(OrderDeliveryMessage.class, this::orderDelivery)
-//                .match(CheckDeliveryStatus.class, this::checkDeliveryStatus)
+                .match(OrderDeliveryMessage.class, this::processDelivery)
+                .match(CompleteDelivery.class, this::completeDelivery)
                 .build();
     }
 
-    private void orderDelivery(OrderDeliveryMessage message) {
+    @Override
+    public void postStop() {
+        tummySavior.closeDbConnection();
+    }
 
-        driverMatcher dMatcher = new driverMatcher();
+    private void completeDelivery(CompleteDelivery message){
+        tummySavior.FreeDriver(message.getOrderId(), message.getDriverId());
+        System.out.println("Order: " + message.getOrderId() + " is delivered.");
+        DeliveryCompleteMessage deliveryCompleteMessage = new DeliveryCompleteMessage(
+                message.getOrderId(), "DELIVERED");
+        orderServiceActor.tell(deliveryCompleteMessage, getSelf());
+    }
+
+    private void processDelivery(OrderDeliveryMessage message) {
+        orderServiceActor = getSender();
+        Document bestDriver = tummySavior.findBestDriver();
 
         int orderId = message.getOrderId();
         String customerAddress = message.getCustomer().getCustomerAddress();
@@ -86,19 +48,24 @@ public class DeliveryService extends AbstractActor {
         String restaurantAddress = message.getOrder().getRestaurant().getRestaurantAddress();
         String restaurantPhone = message.getOrder().getRestaurant().getRestaurantPhone();
 
-        if(dMatcher.bestDriver != null) {
-            dMatcher.bestDriver.toJson();
-            // Estimated Delivery Time is calculated by (rating * location_parameter * 3.75) seconds
-            Double estTime = (dMatcher.bestDriver.getDouble("rating") *
-                    dMatcher.bestDriver.getInteger("location_parameter")) * 3.75;
-            Long estTimeLong = Math.round(estTime);
-            LocalDateTime eTa = LocalDateTime.now().plusSeconds(estTimeLong);
-            String eTaString = eTa.format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"));
+        bestDriver.toJson();
 
-            String driverName = dMatcher.bestDriver.getString("name");
-            String driverPhone = dMatcher.bestDriver.getString("phone");
+        int driverId = bestDriver.getInteger("driver_id");
+        String driverName = bestDriver.getString("name");
+        int driverPhone = bestDriver.getInteger("phone");
 
-            System.out.println("ORDER DISPATCHED" + "\n"
+        // Estimated Delivery Time is calculated by (rating * location_parameter * 3.75) seconds
+        double estTime = (bestDriver.getDouble("rating") *
+                          bestDriver.getDouble("location_parameter")) * 3.75;
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+
+        LocalDateTime dispatchedTime = LocalDateTime.now();
+        long estTimeLong = Math.round(estTime);
+        LocalDateTime eta = dispatchedTime.plusSeconds(estTimeLong);
+        String eTa = eta.format(formatter);
+
+        System.out.println("ORDER DISPATCHED" + "\n"
                     + "Order ID: " + orderId + "\n"
                     + "Customer Address: " + customerAddress + "\n"
                     + "Customer Phone: " + customerPhone + "\n"
@@ -106,42 +73,36 @@ public class DeliveryService extends AbstractActor {
                     + "Restaurant Phone: " + restaurantPhone + "\n"
                     + "Driver Name: " + driverName +"\n"
                     + "Driver Phone: " + driverPhone + "\n"
-                    + "Estimated Time Arrival: " + eTaString +"\n");
+                    + "Estimated Time Arrival: " + eTa +"\n");
 
-        } else {}
+        DeliveryQueryMessage deliveryQueryMessage = new DeliveryQueryMessage(
+                message.getOrderId(), "DISPATCHED", "Order is on its way.");
+        orderServiceActor.tell(deliveryQueryMessage, getSelf());
+
+        tummySavior.SlaveDriver(orderId, driverId);
+
+        System.out.println("Timer is tick tick, wait for the driver delivering the order: " + orderId + ".");
+        String DELIVERY_TIMER = "DELIVERY-TIMER-" + orderId;
+        getTimers().startSingleTimer(DELIVERY_TIMER,
+                new CompleteDelivery(orderId, driverId),
+                Duration.ofSeconds(estTimeLong));
     }
 
-//    private void checkDeliveryStatus(CheckDeliveryStatus message) {
-//        final ActorRef sender = getSender();
-//        executorService.submit(() -> {
-//            TummySavior tummySavior = new TummySavior();
-//            if(tummySavior.tummySaviorDelivered()) {
-//                scheduler.cancel();
-//                if(orderServiceActor != null) {
-//                    OrderDeliveredMessage orderDeliveredMessage = new OrderDeliveredMessage(
-//                            message.getOrderId(), "DELIVERED");
-//                    orderServiceActor.tell(orderDeliveredMessage, getSelf());
-//                }
-//                OrderDeliveringMessage orderDeliveringMessage = new OrderDeliveringMessage(
-//                        message.getOrderId(), "DELIVERED", "Order delivered");
-//                sender.tell(orderDeliveringMessage, getSelf());
-//            } else {
-//                OrderDeliveringMessage orderDeliveringMessage = new OrderDeliveringMessage(
-//                        message.getOrderId(), "UNDELIVERED", "Food undelivered yet");
-//                sender.tell(orderDeliveringMessage, getSelf());
-//            }
-//        });
-//    }
+    public static class CompleteDelivery {
+        private final int orderId;
+        private final int driverId;
 
-//    private static class CheckDeliveryStatus{
-//        private final OrderDeliveryMessage orderDeliveryMessage;
-//        CheckDeliveryStatus(OrderDeliveryMessage message) {
-//            this.orderDeliveryMessage = message;
-//        }
-//
-//        public int getOrderId() {
-//            return orderDeliveryMessage.getOrderId();
-//        }
-//    }
+        public CompleteDelivery(int orderId, int driverId) {
+            this.orderId = orderId;
+            this.driverId = driverId;
+        }
 
+        public int getDriverId() {
+            return driverId;
+        }
+
+        public int getOrderId() {
+            return orderId;
+        }
+    }
 }
