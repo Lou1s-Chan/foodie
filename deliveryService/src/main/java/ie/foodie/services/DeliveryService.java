@@ -1,46 +1,71 @@
 package ie.foodie.services;
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import akka.actor.AbstractActorWithTimers;
-import akka.actor.ActorRef;
+
+import scala.concurrent.duration.Duration;
+import akka.actor.*;
+import ie.foodie.actors.ActorAllocator;
 import ie.foodie.messages.*;
-import org.bson.Document;
+
+import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
 public class DeliveryService extends AbstractActorWithTimers {
-    private ActorRef orderServiceActor;
-    private TummySavior tummySavior = new TummySavior();
-    public DeliveryService() {this.orderServiceActor = null;}
+    // For Testing scope
+    // private ActorRef orderServiceActorBuff;
+    private ActorSelection orderServiceActor;
+    private ActorSelection driverServiceActor;
 
-    public DeliveryService(ActorRef orderServiceActor){
-        this.orderServiceActor = orderServiceActor;
-        this.tummySavior = new TummySavior();
+    public DeliveryService() {}
+    @Override
+    public void preStart() {
+        ActorSystem system = getContext().getSystem();
+        this.orderServiceActor = ActorAllocator.getOrderActor(system);
+        this.driverServiceActor = ActorAllocator.getDriverActor(system);
     }
 
     @Override
     public Receive createReceive(){
         return receiveBuilder()
                 .match(OrderDeliveryMessage.class, this::processDelivery)
-                .match(CompleteDelivery.class, this::completeDelivery)
+                .match(DriverService.InternalMsgNoDriver.class, this::processNoDriver)
+                .match(DeliveryQueryMessage.class, this::dispatchMsgForwader)
+                .match(DeliveryCompleteMessage.class, this::completeDelivery)
                 .build();
     }
 
-    @Override
-    public void postStop() {
-        tummySavior.closeDbConnection();
+    private void completeDelivery(DeliveryCompleteMessage message){
+
+        DriverService.InternalMsgFreeDriver msgFreeDriver = new DriverService.InternalMsgFreeDriver(
+                message.getOrderId(), Integer.parseInt(message.getStatus()));
+        driverServiceActor.tell(msgFreeDriver, getSelf());
+
+        DeliveryCompleteMessage deliveryCompleteMessage = new DeliveryCompleteMessage(
+                message.getOrderId(), "Delivered");
+
+        //For test
+        // orderServiceActorBuff.tell(deliveryCompleteMessage, getSelf());
+        orderServiceActor.tell(deliveryCompleteMessage, getSelf());
+
+        System.out.println("Order: " + message.getOrderId() + " is delivered.\n");
+    }
+    
+    private void dispatchMsgForwader (DeliveryQueryMessage message) {
+        orderServiceActor.tell(message, getSelf());
     }
 
-    private void completeDelivery(CompleteDelivery message){
-        tummySavior.FreeDriver(message.getOrderId(), message.getDriverId());
-        System.out.println("Order: " + message.getOrderId() + " is delivered.");
-        DeliveryCompleteMessage deliveryCompleteMessage = new DeliveryCompleteMessage(
-                message.getOrderId(), "DELIVERED");
-        orderServiceActor.tell(deliveryCompleteMessage, getSelf());
+    private void processNoDriver(DriverService.InternalMsgNoDriver message) {
+        System.out.println("No suitable driver matched the order: "+ message.getOrderId() +" at this time." + "\n"
+                           + "But we will try our best to allocate one.\n");
+        getContext().system().scheduler().scheduleOnce(
+                Duration.create(60, TimeUnit.SECONDS),
+                driverServiceActor.anchor(),
+                new DriverService.InternalMsgSlaveDriver(message.getOrderId()),
+                getContext().dispatcher(),
+                getSelf()
+        );
+
     }
 
     private void processDelivery(OrderDeliveryMessage message) {
-        orderServiceActor = getSender();
-        Document bestDriver = tummySavior.findBestDriver();
 
         int orderId = message.getOrderId();
         String customerAddress = message.getCustomer().getCustomerAddress();
@@ -48,61 +73,19 @@ public class DeliveryService extends AbstractActorWithTimers {
         String restaurantAddress = message.getOrder().getRestaurant().getRestaurantAddress();
         String restaurantPhone = message.getOrder().getRestaurant().getRestaurantPhone();
 
-        bestDriver.toJson();
-
-        int driverId = bestDriver.getInteger("driver_id");
-        String driverName = bestDriver.getString("name");
-        int driverPhone = bestDriver.getInteger("phone");
-
-        // Estimated Delivery Time is calculated by (rating * location_parameter * 3.75) seconds
-        double estTime = (bestDriver.getDouble("rating") *
-                          bestDriver.getDouble("location_parameter")) * 3.75;
-
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
-
-        LocalDateTime dispatchedTime = LocalDateTime.now();
-        long estTimeLong = Math.round(estTime);
-        LocalDateTime eta = dispatchedTime.plusSeconds(estTimeLong);
-        String eTa = eta.format(formatter);
-
-        System.out.println("ORDER DISPATCHED" + "\n"
+        System.out.println("NEW DELIVER TASK CREATED" + "\n"
                     + "Order ID: " + orderId + "\n"
                     + "Customer Address: " + customerAddress + "\n"
                     + "Customer Phone: " + customerPhone + "\n"
                     + "Restaurant Address: " + restaurantAddress + "\n"
-                    + "Restaurant Phone: " + restaurantPhone + "\n"
-                    + "Driver Name: " + driverName +"\n"
-                    + "Driver Phone: " + driverPhone + "\n"
-                    + "Estimated Time Arrival: " + eTa +"\n");
+                    + "Restaurant Phone: " + restaurantPhone + "\n");
+        System.out.println("We are allocating suitable driver at this time.\n");
+        DriverService.InternalMsgSlaveDriver internalMsgSlaveDriver = new DriverService.InternalMsgSlaveDriver(
+                message.getOrderId());
+        driverServiceActor.tell(internalMsgSlaveDriver, getSelf());
 
-        DeliveryQueryMessage deliveryQueryMessage = new DeliveryQueryMessage(
-                message.getOrderId(), "DISPATCHED", "Order is on its way.");
+        DeliveryQueryMessage deliveryQueryMessage = new DeliveryQueryMessage(orderId,
+                "Pending", "Allocating suitable driver.");
         orderServiceActor.tell(deliveryQueryMessage, getSelf());
-
-        tummySavior.SlaveDriver(orderId, driverId);
-
-        System.out.println("Timer is tick tick, wait for the driver delivering the order: " + orderId + ".");
-        String DELIVERY_TIMER = "DELIVERY-TIMER-" + orderId;
-        getTimers().startSingleTimer(DELIVERY_TIMER,
-                new CompleteDelivery(orderId, driverId),
-                Duration.ofSeconds(estTimeLong));
-    }
-
-    public static class CompleteDelivery {
-        private final int orderId;
-        private final int driverId;
-
-        public CompleteDelivery(int orderId, int driverId) {
-            this.orderId = orderId;
-            this.driverId = driverId;
-        }
-
-        public int getDriverId() {
-            return driverId;
-        }
-
-        public int getOrderId() {
-            return orderId;
-        }
     }
 }

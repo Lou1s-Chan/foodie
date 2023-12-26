@@ -12,7 +12,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 public class TummySavior {
     private final MongoClient mongoClient;
@@ -40,10 +39,10 @@ public class TummySavior {
         collection.insertOne(newRecord);
 
         // Select from driver database
-        MongoCollection<Document> collection1 = mongoDatabase.getCollection("drivers");
+        // MongoCollection<Document> collection1 = mongoDatabase.getCollection("drivers");
 
         //Select from test driver database
-        // MongoCollection<Document> collection1 = mongoDatabase.getCollection("test_drivers");
+        MongoCollection<Document> collection1 = mongoDatabase.getCollection("test_drivers");
         collection1.updateOne(Filters.eq("driver_id", driverId), Updates.set("availability", "on_duty"));
     }
 
@@ -57,29 +56,11 @@ public class TummySavior {
                         Updates.set("status", "delivered")));
 
         // Select from driver database
-        MongoCollection<Document> collection1 = mongoDatabase.getCollection("drivers");
+        // MongoCollection<Document> collection1 = mongoDatabase.getCollection("drivers");
 
         //Select from test driver database
-        // MongoCollection<Document> collection1 = mongoDatabase.getCollection("test_drivers");
+         MongoCollection<Document> collection1 = mongoDatabase.getCollection("test_drivers");
         collection1.updateOne(Filters.eq("driver_id", driverId), Updates.set("availability", "free"));
-    }
-
-    public Document findBestDriver() {
-            while (true) {
-                Document bestDriver = BestDriver();
-                System.out.println("Finding Suitable Driver for This Order.");
-                if (bestDriver != null) {
-                    System.out.println("Matched Driver Found.");
-                    return bestDriver;
-                } else {
-                    try {
-                        TimeUnit.SECONDS.sleep(180);
-                    } catch ( InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                        return null;
-                    }
-                }
-            }
     }
 
     public Document BestDriver() {
@@ -89,10 +70,10 @@ public class TummySavior {
                                 Arrays.asList("$location_parameter", "$rating"))));
 
         // Select from drivers database
-        MongoCollection<Document> collection = mongoDatabase.getCollection("drivers");
+        // MongoCollection<Document> collection = mongoDatabase.getCollection("drivers");
 
         //Select from test drivers database
-        // MongoCollection<Document> collection = mongoDatabase.getCollection("test_drivers");
+        MongoCollection<Document> collection = mongoDatabase.getCollection("test_drivers");
         return collection.aggregate(Arrays.asList(
                 Aggregates.match(Filters.eq("availability", "free")),
                 Aggregates.addFields(fields),
