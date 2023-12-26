@@ -53,7 +53,7 @@ public class OrderServiceTest {
     @Test
     public void testReceivePaymentConfirmMessage() {
         CustomerOrderMessage orderConfirmMessage = generateCustomerOrderMessage();
-        PaymentConfirmMessage paymentConfirmMessage = genereatePaymentConfirmMessage(1);
+        PaymentStatusMessage paymentConfirmMessage = genereatePaymentConfirmMessage(1);
 
         orderDao.insertCustomerOrderMessage(orderConfirmMessage);
         final TestKit deliveryService = new TestKit(system); // delivery service
@@ -68,8 +68,8 @@ public class OrderServiceTest {
         restaurantService.expectMsgClass(FiniteDuration.apply(10, TimeUnit.SECONDS), RestaurantOrderMessage.class);
     }
 
-    private PaymentConfirmMessage genereatePaymentConfirmMessage(int orderId) {
-        return new PaymentConfirmMessage(orderId, "success");
+    private PaymentStatusMessage genereatePaymentConfirmMessage(int orderId) {
+        return new PaymentStatusMessage(orderId, "CARD-PAID", "Payment processed successfully.");
     }
 
     private CustomerOrderMessage generateCustomerOrderMessage() {
