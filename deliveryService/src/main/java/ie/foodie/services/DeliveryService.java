@@ -6,18 +6,18 @@ import ie.foodie.actors.ActorAllocator;
 import ie.foodie.messages.*;
 
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Pattern;
 
 public class DeliveryService extends AbstractActorWithTimers {
-    // For Testing scope
-    // private ActorRef orderServiceActorBuff;
+
     private ActorSelection orderServiceActor;
     private ActorSelection driverServiceActor;
 
     public DeliveryService() {}
+
     @Override
     public void preStart() {
         ActorSystem system = getContext().getSystem();
+
         this.orderServiceActor = ActorAllocator.getOrderActor(system);
         this.driverServiceActor = ActorAllocator.getDriverActor(system);
     }
@@ -41,8 +41,6 @@ public class DeliveryService extends AbstractActorWithTimers {
         DeliveryCompleteMessage deliveryCompleteMessage = new DeliveryCompleteMessage(
                 message.getOrderId(), "Delivered");
 
-        //For test
-        // orderServiceActorBuff.tell(deliveryCompleteMessage, getSelf());
         orderServiceActor.tell(deliveryCompleteMessage, getSelf());
 
         System.out.println("Order: " + message.getOrderId() + " is delivered.\n");
@@ -57,7 +55,7 @@ public class DeliveryService extends AbstractActorWithTimers {
                            + "But we will try our best to allocate one.\n");
         getContext().system().scheduler().scheduleOnce(
                 Duration.create(60, TimeUnit.SECONDS),
-                driverServiceActor.anchor(),
+                getSender(),
                 new DriverService.InternalMsgSlaveDriver(message.getOrderId()),
                 getContext().dispatcher(),
                 getSelf()

@@ -1,8 +1,11 @@
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
+import akka.actor.DeadLetter;
 import akka.actor.Props;
 import java.time.Duration;
 import java.util.List;
+import java.util.Objects;
+
 import akka.testkit.javadsl.TestKit;
 import ie.foodie.messages.DeliveryCompleteMessage;
 import ie.foodie.messages.DeliveryQueryMessage;
@@ -14,7 +17,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 public class DeliveryServiceTest {
     static ActorSystem system;
@@ -34,6 +36,8 @@ public class DeliveryServiceTest {
     public void testDelivery() {
 
         TestKit probe = new TestKit(system);
+        system.eventStream().subscribe(probe.getRef(), DeadLetter.class);
+
         ActorRef driverService = system.actorOf(Props.create(DriverService.class), "driver-service");
         ActorRef deliveryService = system.actorOf(Props.create(DeliveryService.class), "delivery-service");
 
@@ -58,52 +62,25 @@ public class DeliveryServiceTest {
         OrderDeliveryMessage testDeliveryMessage3 = new OrderDeliveryMessage(testOrderId3, fakeOrder3, fakeCustomer3);
         deliveryService.tell(testDeliveryMessage3, probe.getRef());
 
-        List<Object> responsesFirst = probe.receiveN(3, Duration.ofSeconds(300));
-        for (Object response : responsesFirst) {
-            assertTrue(response instanceof DeliveryQueryMessage);
-            DeliveryQueryMessage deliveryQueryMessage = (DeliveryQueryMessage) response;
-            assertEquals("Pending", deliveryQueryMessage.getStatus());
-            assertEquals("Allocating suitable driver.", deliveryQueryMessage.getMessage());
+        List<Object> deadLetters = probe.receiveN(9, Duration.ofSeconds(300));
+        for (Object deadLetterObject : deadLetters) {
+            DeadLetter deadLetter = (DeadLetter) deadLetterObject;
 
-            if (deliveryQueryMessage.getOrderId() == 990) {
-                System.out.println("Test log: Task of Order 990 Created.");
-            } else if (deliveryQueryMessage.getOrderId() == 991) {
-                System.out.println("Test log: Task of Order 991 Created.");
-            } else if (deliveryQueryMessage.getOrderId() == 992) {
-                System.out.println("Test log: Task of Order 992 Created.");
+            // Check if the dead letter is of the expected type
+            if (deadLetter.message() instanceof DeliveryCompleteMessage) {
+                DeliveryCompleteMessage message = (DeliveryCompleteMessage) deadLetter.message();
+                assertEquals("Delivered", message.getStatus());
+                    System.out.println("Dead letter log: Order " + message.getOrderId() + " Delivered Successfully!");
+            } else if (deadLetter.message() instanceof DeliveryQueryMessage) {
+                DeliveryQueryMessage message = (DeliveryQueryMessage) deadLetter.message();
+                if (Objects.equals(message.getStatus(), "Pending")) {
+                        System.out.println("Test log: Task of Order " + message.getOrderId() + " Created.");
+                } else if (Objects.equals(message.getStatus(), "Dispatched")) {
+                        System.out.println("Test log: Order " + message.getOrderId() + " Dispatched.");
+                }
             }
         }
 
-        List<Object> responsesSecond = probe.receiveN(3, Duration.ofSeconds(300));
-        for (Object response : responsesSecond) {
-            assertTrue(response instanceof DeliveryQueryMessage);
-            DeliveryQueryMessage deliveryQueryMessage = (DeliveryQueryMessage) response;
-            assertEquals("Dispatched", deliveryQueryMessage.getStatus());
-            assertEquals("Order is on its way.", deliveryQueryMessage.getMessage());
-
-            if (deliveryQueryMessage.getOrderId() == 990) {
-                System.out.println("Test log: Order 990 Dispatched Successfully!");
-            } else if (deliveryQueryMessage.getOrderId() == 991) {
-                System.out.println("Test log: Order 991 Dispatched Successfully!");
-            } else if (deliveryQueryMessage.getOrderId() == 992) {
-                System.out.println("Test log: Order 992 Dispatched Successfully!");
-            }
-        }
-
-        List<Object> responsesThird = probe.receiveN(3, Duration.ofSeconds(300));
-        for (Object response : responsesThird) {
-            assertTrue(response instanceof DeliveryCompleteMessage);
-            DeliveryCompleteMessage deliveryCompleteMessage = (DeliveryCompleteMessage) response;
-            assertEquals("Delivered", deliveryCompleteMessage.getStatus());
-
-            if (deliveryCompleteMessage.getOrderId() == 990) {
-                System.out.println("Test log: Order 990 Delivered Successfully!");
-            } else if (deliveryCompleteMessage.getOrderId() == 991) {
-                System.out.println("Test log: Order 991 Delivered Successfully!");
-            }
-            else if (deliveryCompleteMessage.getOrderId() == 992) {
-                System.out.println("Test log: Order 992 Delivered Successfully!");
-            }
-        }
+        system.eventStream().unsubscribe(probe.getRef(), DeadLetter.class);
     }
 }

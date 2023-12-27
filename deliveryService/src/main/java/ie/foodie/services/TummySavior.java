@@ -39,10 +39,10 @@ public class TummySavior {
         collection.insertOne(newRecord);
 
         // Select from driver database
-        // MongoCollection<Document> collection1 = mongoDatabase.getCollection("drivers");
+        MongoCollection<Document> collection1 = mongoDatabase.getCollection("drivers");
 
         //Select from test driver database
-        MongoCollection<Document> collection1 = mongoDatabase.getCollection("test_drivers");
+//        MongoCollection<Document> collection1 = mongoDatabase.getCollection("test_drivers");
         collection1.updateOne(Filters.eq("driver_id", driverId), Updates.set("availability", "on_duty"));
     }
 
@@ -56,10 +56,10 @@ public class TummySavior {
                         Updates.set("status", "delivered")));
 
         // Select from driver database
-        // MongoCollection<Document> collection1 = mongoDatabase.getCollection("drivers");
+        MongoCollection<Document> collection1 = mongoDatabase.getCollection("drivers");
 
         //Select from test driver database
-         MongoCollection<Document> collection1 = mongoDatabase.getCollection("test_drivers");
+//         MongoCollection<Document> collection1 = mongoDatabase.getCollection("test_drivers");
         collection1.updateOne(Filters.eq("driver_id", driverId), Updates.set("availability", "free"));
     }
 
@@ -70,10 +70,10 @@ public class TummySavior {
                                 Arrays.asList("$location_parameter", "$rating"))));
 
         // Select from drivers database
-        // MongoCollection<Document> collection = mongoDatabase.getCollection("drivers");
+        MongoCollection<Document> collection = mongoDatabase.getCollection("drivers");
 
         //Select from test drivers database
-        MongoCollection<Document> collection = mongoDatabase.getCollection("test_drivers");
+//        MongoCollection<Document> collection = mongoDatabase.getCollection("test_drivers");
         return collection.aggregate(Arrays.asList(
                 Aggregates.match(Filters.eq("availability", "free")),
                 Aggregates.addFields(fields),
