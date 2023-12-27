@@ -58,7 +58,8 @@ public class OrderServiceTest {
         orderDao.insertCustomerOrderMessage(orderConfirmMessage);
         final TestKit deliveryService = new TestKit(system); // delivery service
         final TestKit restaurantService = new TestKit(system); // restaurant service
-        final Props props = Props.create(OrderService.class, deliveryService.testActor(), restaurantService.testActor(), orderDao);
+        final TestKit userService = new TestKit(system); // user service
+        final Props props = Props.create(OrderService.class, deliveryService.testActor(), restaurantService.testActor(), userService.testActor(), orderDao);
         final ActorRef orderService = system.actorOf(props); // orderService
         final TestKit paymentService = new TestKit(system); // payment service
 
