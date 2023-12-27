@@ -7,6 +7,8 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import java.io.IOException;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 @RestController
 public class SSEController {
@@ -15,12 +17,23 @@ public class SSEController {
     @CrossOrigin(origins = "http://localhost:3000")
     @GetMapping("/stream")
     public SseEmitter stream() {
-        SseEmitter emitter = new SseEmitter();
+        SseEmitter emitter = createEmitter();
         this.emitters.add(emitter);
 
         emitter.onCompletion(() -> this.emitters.remove(emitter));
         emitter.onTimeout(() -> this.emitters.remove(emitter));
 
+        return emitter;
+    }
+    public SseEmitter createEmitter() {
+        SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
+        Executors.newScheduledThreadPool(1).scheduleAtFixedRate(() -> {
+            try {
+                emitter.send(SseEmitter.event().comment("keep-alive"));
+            } catch (IOException e) {
+                emitter.completeWithError(e);
+            }
+        }, 0, 15, TimeUnit.SECONDS); // Send a keep-alive every 15 seconds
         return emitter;
     }
 
