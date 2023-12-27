@@ -94,7 +94,8 @@ public class DriverService extends AbstractActorWithTimers {
                     + "Estimated Time Arrival: " + eTa +"\n");
 
             DeliveryQueryMessage deliveryQueryMessage = new DeliveryQueryMessage(msgSlaveDriver.getOrderId(),
-                    "Dispatched", "Order is on its way.");
+                    "Dispatched", "Your order is on its way, the ETA is "+ eTa +"\n"
+                                                            + "Your driver is " + driverName + ".\n");
             getSender().tell(deliveryQueryMessage, getSelf());
 
             // Simulate the delivery by setting a timer

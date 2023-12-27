@@ -5,6 +5,8 @@ import akka.actor.*;
 import ie.foodie.actors.ActorAllocator;
 import ie.foodie.messages.*;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.concurrent.TimeUnit;
 
 public class DeliveryService extends AbstractActorWithTimers {
@@ -55,7 +57,10 @@ public class DeliveryService extends AbstractActorWithTimers {
                 driverServiceActor.tell(msgFreeDriver, getSelf());
 
                 DeliveryQueryMessage deliveryQueryMessage = new DeliveryQueryMessage(
-                        message.getOrderId(), "Delivered", "Order " + message.getOrderId() + "is delivered."
+                        message.getOrderId(), "Delivered",
+                        "Your order " + message.getOrderId()
+                                + " is delivered at "
+                                + LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss")) + "."
                 );
                 orderServiceActor.tell(deliveryQueryMessage, getSelf());
                 System.out.println("Order: " + message.getOrderId() + " is delivered.\n");
