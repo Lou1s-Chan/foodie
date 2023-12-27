@@ -4,14 +4,24 @@ import akka.actor.ActorRef;
 import akka.actor.ActorSelection;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ApplicationContext;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import service.SSE.SSEController;
 
+
+@SpringBootApplication
 public class Main {
     static ActorSystem system = ActorSystem.create("restaurant-system");
 
     public static void main(String[] args) {
-        System.out.println("Running Restaurant Service");
-        final Props ResServiceProp = Props.create(ResActor.class);
+        ApplicationContext applicationContext = SpringApplication.run(Main.class, args);
+        SSEController sseController = applicationContext.getBean(SSEController.class);
+        final Props ResServiceProp = Props.create(ResActor.class, () -> new ResActor(sseController));
         final ActorRef ResServiceRef = system.actorOf(ResServiceProp, "restaurant-service");
+        System.out.println("Running Restaurant Service");
+
 
         try {
             String OrderPath = "akka.tcp://order-system@order-host:2553/user/order-service";
