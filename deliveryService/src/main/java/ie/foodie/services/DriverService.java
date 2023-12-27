@@ -79,24 +79,6 @@ public class DriverService extends AbstractActorWithTimers {
         }
     }
 
-    public static class InternalMsgCompleteDelivery {
-        private final int orderId;
-        private final int driverId;
-
-        public InternalMsgCompleteDelivery(int orderId, int driverId) {
-            this.orderId = orderId;
-            this.driverId = driverId;
-        }
-
-        public int getDriverId() {
-            return driverId;
-        }
-
-        public int getOrderId() {
-            return orderId;
-        }
-    }
-
     private void startDelivery(InternalMsgSlaveDriver msgSlaveDriver) {
 
         Document bestDriver = tummySavior.BestDriver();
@@ -125,9 +107,11 @@ public class DriverService extends AbstractActorWithTimers {
             DeliveryQueryMessage deliveryQueryMessage = new DeliveryQueryMessage(msgSlaveDriver.getOrderId(),
                     "Dispatched", "Order is on its way.");
             getSender().tell(deliveryQueryMessage, getSelf());
+
+            // Simulate the delivery by setting a timer
             getContext().system().scheduler().scheduleOnce(
                     Duration.create(estTimeLong, TimeUnit.SECONDS),
-                    deliveryServiceActor.anchor(),
+                    getSender(),
                     new DeliveryCompleteMessage(msgSlaveDriver.getOrderId(), driverId.toString()),
                     getContext().dispatcher(),
                     getSelf()

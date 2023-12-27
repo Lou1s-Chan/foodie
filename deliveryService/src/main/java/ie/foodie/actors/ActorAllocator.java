@@ -14,7 +14,6 @@ public class ActorAllocator {
 
     public static ActorSelection getOrderActor(ActorSystem system) {
         String orderHost = "localhost";
-        // akka.<protocol>://<actorsystemname>@<hostname>:<port>/<actor path>
         return system.actorSelection("akka.tcp://order-system@" + orderHost + ":2553/user/order-service");
     }
 }
