@@ -10,13 +10,7 @@ import akka.actor.ActorSelection;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
 import akka.japi.pf.ReceiveBuilder;
-import ie.foodie.messages.CustomerOrderMessage;
-import ie.foodie.messages.MenuItemsResponse;
-import ie.foodie.messages.OrderConfirmMessage;
-import ie.foodie.messages.OrderPaymentMessage;
-import ie.foodie.messages.PaymentStatusMessage;
-import ie.foodie.messages.RestaurantQueryMessage;
-import ie.foodie.messages.RestaurantsResponse;
+import ie.foodie.messages.*;
 import ie.foodie.messages.RestaurantsResponse.RestaurantData;
 import ie.foodie.messages.models.Customer;
 import ie.foodie.messages.models.Order;
@@ -162,6 +156,21 @@ public class UserActor extends AbstractActor {
                             orderSystem.tell(new CustomerOrderMessage(
                                     new Customer(customerId, customerAddress, customerPhone), order), getSelf());
                         })
+                .match(DeliveryQueryMessage.class, msg -> {
+                    switch (msg.getStatus()) {
+                        case "Pending":
+                            System.out.println("We are finding suitable driver for order: " + msg.getOrderId() + ".\n");
+                            break;
+                        case "NoDriver":
+                            System.out.println("There no suitable driver for order: " + msg.getOrderId() + ".\n"
+                                    + "But we will try our best to allocate one.");
+                            break;
+                        case "Dispatched":
+                        case "Delivered":
+                            System.out.println(msg.getMessage());
+                            break;
+                    }
+                })
                 .build();
     }
 }
