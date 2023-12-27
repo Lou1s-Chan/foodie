@@ -151,7 +151,7 @@ public class OrderMongodbDao {
         MongoCollection<Document> ordersCollection = database.getCollection("orders");
 
         // Create a filter to find the order by its ID
-        Bson filter = Filters.eq("orderId", paymentConfirmMessage.getOrderId());
+        Bson filter = Filters.eq("orderID", paymentConfirmMessage.getOrderId());
 
         // Create an update operation to set the new status
         Bson updateOperation = Updates.set("status", paymentConfirmMessage.getStatus());
