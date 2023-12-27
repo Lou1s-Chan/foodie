@@ -14,8 +14,10 @@ public class OrderService extends AbstractActor {
     private final OrderMongodbDao orderDao;
     private final ActorRef deliveryActor;
     private final ActorRef restaurantActor;
+    private final ActorRef userActor;
 //    private ActorSelection deliveryActor;
 //    private ActorSelection restaurantActor;
+//    private ActorSelection userActor;
 
 
 //    @Override
@@ -25,22 +27,27 @@ public class OrderService extends AbstractActor {
 //                ActorProvider.getDeliveryActor(system);
 //        this.restaurantActor =
 //                ActorProvider.getRestaurantActor(system);
+//        this.userActor =
+//                ActorProvider.getUserActor(system);
 //    }
     public OrderService() {
         deliveryActor =
                 ActorProvider.getDeliveryActor(getContext().getSystem()).anchor();
         restaurantActor =
                 ActorProvider.getRestaurantActor(getContext().getSystem()).anchor();
+        userActor =
+                ActorProvider.getUserActor(getContext().getSystem()).anchor();
         orderDao = new OrderMongodbDao("mongodb+srv://foodie:ccOUvdosBLzDprGM@foodie.cli5iha.mongodb.net/?retryWrites=true&w=majority");
     }
 
     //for test
-//    public OrderService(ActorRef deliveryActor, ActorRef restaurantActor,
-//                        OrderMongodbDao orderDao) {
-//        this.deliveryActor = deliveryActor;
-//        this.restaurantActor = restaurantActor;
-//        this.orderDao = orderDao;
-//    }
+    public OrderService(ActorRef deliveryActor, ActorRef restaurantActor, ActorRef userActor,
+                        OrderMongodbDao orderDao) {
+        this.deliveryActor = deliveryActor;
+        this.restaurantActor = restaurantActor;
+        this.userActor = userActor;
+        this.orderDao = orderDao;
+    }
 
     @Override
     public Receive createReceive() {
@@ -90,6 +97,9 @@ public class OrderService extends AbstractActor {
                         MessagePrinter.printOrderDeliveryMessage(orderDeliveryMessage);
                     }
                 })
+                .match(DeliveryQueryMessage.class, msg -> {
+                    userActor.tell(msg, getSelf());
+        })
                 .build();
     }
 
