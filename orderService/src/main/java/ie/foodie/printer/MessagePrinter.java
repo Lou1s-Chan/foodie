@@ -2,10 +2,7 @@ package ie.foodie.printer;
 
 import java.util.List;
 
-import ie.foodie.messages.CustomerOrderMessage;
-import ie.foodie.messages.OrderDeliveryMessage;
-import ie.foodie.messages.PaymentConfirmMessage;
-import ie.foodie.messages.RestaurantOrderMessage;
+import ie.foodie.messages.*;
 import ie.foodie.messages.models.Customer;
 import ie.foodie.messages.models.Order;
 import ie.foodie.messages.models.Order.OrderDetail;
@@ -55,7 +52,8 @@ public class MessagePrinter {
         System.out.println();
     }
 
-    public static void printPaymentConfirmMessage(PaymentConfirmMessage message) {
+    // public static void printPaymentConfirmMessage(PaymentConfirmMessage message) {
+    public static void printPaymentConfirmMessage(PaymentStatusMessage message) {
         if (message == null) {
             System.out.println("Payment Confirm Message is null.");
         } else {

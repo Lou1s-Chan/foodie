@@ -53,7 +53,9 @@ public class Main {
 
         // creating the system and actor for USER
         ActorSystem system = ActorSystem.create("user-system");
-        final ActorRef ref = system.actorOf(Props.create(UserActor.class), "user-service");
+        // final ActorRef ref = system.actorOf(Props.create(UserActor.class),
+        // "user-service");
+        final ActorRef ref = system.actorOf(Props.create(UserActor.class, system), "user-service");
 
         boolean loginSuccess = false;
         Scanner scanner = new Scanner(System.in);
@@ -108,10 +110,11 @@ public class Main {
 
         // Execute the query
         Document userDocument = collection.find(query).first();
+        int id = Integer.parseInt(userDocument.getString("ID"));
         String address = userDocument.getString("address");
         String phone = userDocument.getString("telephone");
-        userList.put(TOKEN, username);
-        Customer user = new Customer(TOKEN++, address, phone);
+        userList.put(id, username);
+        Customer user = new Customer(id, address, phone);
         return user;
 
     }
