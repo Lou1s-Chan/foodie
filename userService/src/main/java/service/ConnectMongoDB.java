@@ -33,29 +33,28 @@ public class ConnectMongoDB {
 
     private static void insertUserTable(MongoDatabase database) throws SQLException {
         MongoCollection<Document> collection = database.getCollection("users");
-        long collectionSize = collection.countDocuments();
-        System.out.println("Collection size: " + collectionSize);
         List<Document> userData = new ArrayList<>();
 
-        // String[] userInfos = {
-        // "INSERT INTO user ( username,password, phone, address) VALUES
-        // ('Moo','password1', '123456789', 'Dublin 1');"
-
-        // };
         String[] userInfos = {
-                "Moo,password1, 123456789, Dublin 1"
+                "001,Moo,password1, 111111111, Dublin 1, ,",
+                "002,John,password2, 222222222, Dublin 2, ,",
+                "003,Jack,password3, 333333333, Dublin 3, ,",
+                "004,James,password4, 444444444, Dublin 4, ,",
+                "005,Joe,password5, 555555555, Dublin 5, ,"
 
         };
 
         for (String line : userInfos) {
             String[] parts = line.split(",");
-            if (parts.length == 4) {
-                String username = parts[0].trim();
-                if (collection.countDocuments(eq("username", username)) == 0) {
-                    Document user = new Document("username", username)
-                            .append("password", parts[1].trim())
-                            .append("telephone", parts[2].trim())
-                            .append("address", parts[3].trim());
+            if (parts.length == 6) {
+                String id = parts[0].trim();
+                if (collection.countDocuments(eq("ID", id)) == 0) {
+                    Document user = new Document("ID", id)
+                            .append("username", parts[1].trim())
+                            .append("password", parts[2].trim())
+                            .append("telephone", parts[3].trim())
+                            .append("address", parts[4].trim())
+                            .append("cardNumber", parts[5].trim());
                     userData.add(user);
                 }
             }

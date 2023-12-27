@@ -15,7 +15,7 @@ import com.mongodb.client.model.Updates;
 import com.mongodb.client.result.UpdateResult;
 import ie.foodie.messages.CustomerOrderMessage;
 import ie.foodie.messages.OrderConfirmMessage;
-import ie.foodie.messages.PaymentConfirmMessage;
+import ie.foodie.messages.PaymentStatusMessage;
 import ie.foodie.messages.models.Customer;
 import ie.foodie.messages.models.Order;
 import org.bson.Document;
@@ -147,11 +147,11 @@ public class OrderMongodbDao {
         return new CustomerOrderMessage(customer, new ArrayList<>(orders));
     }
 
-    public boolean updatePaymentStatus(PaymentConfirmMessage paymentConfirmMessage) {
+    public boolean updatePaymentStatus(PaymentStatusMessage paymentConfirmMessage) {
         MongoCollection<Document> ordersCollection = database.getCollection("orders");
 
         // Create a filter to find the order by its ID
-        Bson filter = Filters.eq("orderId", paymentConfirmMessage.getOrderId());
+        Bson filter = Filters.eq("orderID", paymentConfirmMessage.getOrderId());
 
         // Create an update operation to set the new status
         Bson updateOperation = Updates.set("status", paymentConfirmMessage.getStatus());

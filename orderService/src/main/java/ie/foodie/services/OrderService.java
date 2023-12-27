@@ -2,6 +2,8 @@ package ie.foodie.services;
 
 import akka.actor.AbstractActor;
 import akka.actor.ActorRef;
+import akka.actor.ActorSelection;
+import akka.actor.ActorSystem;
 import ie.foodie.actors.ActorProvider;
 import ie.foodie.database.OrderMongodbDao;
 import ie.foodie.messages.*;
@@ -13,11 +15,26 @@ public class OrderService extends AbstractActor {
     private final ActorRef deliveryActor;
     private final ActorRef restaurantActor;
 
+//    private ActorSelection deliveryActor;
+//    private ActorSelection restaurantActor;
+    private ActorRef userActor = null;
+
+
+//    @Override
+//    public void preStart() {
+//        ActorSystem system = getContext().getSystem();
+//        this.deliveryActor =
+//                ActorProvider.getDeliveryActor(system);
+//        this.restaurantActor =
+//                ActorProvider.getRestaurantActor(system);
+//    }
     public OrderService() {
         deliveryActor =
                 ActorProvider.getDeliveryActor(getContext().getSystem()).anchor();
         restaurantActor =
                 ActorProvider.getRestaurantActor(getContext().getSystem()).anchor();
+//        userActor =
+//                ActorProvider.getUserActor(getContext().getSystem()).anchor();
         orderDao = new OrderMongodbDao("mongodb+srv://foodie:ccOUvdosBLzDprGM@foodie.cli5iha.mongodb.net/?retryWrites=true&w=majority");
     }
 
@@ -33,6 +50,7 @@ public class OrderService extends AbstractActor {
     public Receive createReceive() {
         return receiveBuilder()
                 .match(CustomerOrderMessage.class, msg -> {
+                    this.userActor = getSender();
                     System.out.println("******** Received order message: " + msg.getCustomer().getCustomerId());
                     // calculate price and store to db
                     OrderConfirmMessage orderConfirmMessage =
@@ -44,7 +62,8 @@ public class OrderService extends AbstractActor {
 
                     getSender().tell(orderConfirmMessage, getSelf());
                 })
-                .match(PaymentConfirmMessage.class, msg -> {
+                // .match(PaymentConfirmMessage.class, msg -> {
+                .match(PaymentStatusMessage.class, msg -> {                        
                     System.out.println("******** Received payment message: ");
                     MessagePrinter.printPaymentConfirmMessage(msg);
                     // change status in db
@@ -76,6 +95,9 @@ public class OrderService extends AbstractActor {
                         MessagePrinter.printOrderDeliveryMessage(orderDeliveryMessage);
                     }
                 })
+                .match(DeliveryQueryMessage.class, msg -> {
+                    userActor.tell(msg, getSelf());
+        })
                 .build();
     }
 

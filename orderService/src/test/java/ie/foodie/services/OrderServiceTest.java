@@ -53,12 +53,13 @@ public class OrderServiceTest {
     @Test
     public void testReceivePaymentConfirmMessage() {
         CustomerOrderMessage orderConfirmMessage = generateCustomerOrderMessage();
-        PaymentConfirmMessage paymentConfirmMessage = genereatePaymentConfirmMessage(1);
+        PaymentStatusMessage paymentConfirmMessage = genereatePaymentConfirmMessage(1);
 
         orderDao.insertCustomerOrderMessage(orderConfirmMessage);
         final TestKit deliveryService = new TestKit(system); // delivery service
         final TestKit restaurantService = new TestKit(system); // restaurant service
-        final Props props = Props.create(OrderService.class, deliveryService.testActor(), restaurantService.testActor(), orderDao);
+        final TestKit userService = new TestKit(system); // user service
+        final Props props = Props.create(OrderService.class, deliveryService.testActor(), restaurantService.testActor(), userService.testActor(), orderDao);
         final ActorRef orderService = system.actorOf(props); // orderService
         final TestKit paymentService = new TestKit(system); // payment service
 
@@ -68,8 +69,8 @@ public class OrderServiceTest {
         restaurantService.expectMsgClass(FiniteDuration.apply(10, TimeUnit.SECONDS), RestaurantOrderMessage.class);
     }
 
-    private PaymentConfirmMessage genereatePaymentConfirmMessage(int orderId) {
-        return new PaymentConfirmMessage(orderId, "success");
+    private PaymentStatusMessage genereatePaymentConfirmMessage(int orderId) {
+        return new PaymentStatusMessage(orderId, "CARD-PAID", "Payment processed successfully.");
     }
 
     private CustomerOrderMessage generateCustomerOrderMessage() {

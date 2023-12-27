@@ -1,47 +1,75 @@
 package ie.foodie.services;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ExecutorService;
-
-import akka.actor.AbstractActor;
-import akka.actor.ActorRef;
-import akka.actor.Cancellable;
+import scala.concurrent.duration.Duration;
+import akka.actor.*;
+import ie.foodie.actors.ActorAllocator;
 import ie.foodie.messages.*;
 
-import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.concurrent.TimeUnit;
 
-public class DeliveryService extends AbstractActor {
-    private final ActorRef orderServiceActor;
-    private Cancellable scheduler;
-    private ExecutorService executorService;
+public class DeliveryService extends AbstractActorWithTimers {
 
-    public DeliveryService() {
-        this.orderServiceActor = null;
-    }
+    private ActorSelection orderServiceActor;
+    private ActorSelection driverServiceActor;
 
-    public DeliveryService(ActorRef orderServiceActor) {
+    public DeliveryService() {}
 
-        this.orderServiceActor = orderServiceActor;
-        this.executorService = Executors.newSingleThreadExecutor();
+    @Override
+    public void preStart() {
+        ActorSystem system = getContext().getSystem();
+
+        this.orderServiceActor = ActorAllocator.getOrderActor(system);
+        this.driverServiceActor = ActorAllocator.getDriverActor(system);
     }
 
     @Override
     public Receive createReceive(){
         return receiveBuilder()
-                .match(OrderDeliveryMessage.class, this::orderDelivery)
-                .match(CheckDeliveryStatus.class, this::checkDeliveryStatus)
+                .match(OrderDeliveryMessage.class, this::processDelivery)
+                .match(DeliveryQueryMessage.class, this::msgForwarder)
                 .build();
     }
 
-    private void orderDelivery(OrderDeliveryMessage message) {
-        scheduler = getContext().system().scheduler().schedule(
-                Duration.ofMillis(0),
-                Duration.ofSeconds(5),
-                getSelf(),
-                new CheckDeliveryStatus(message),
-                getContext().dispatcher(),
-                getSelf()
-        );
+    private void msgForwarder(DeliveryQueryMessage message) {
+        switch (message.getStatus()) {
+            case "Dispatched" :
+                orderServiceActor.tell(message, getSelf());
+                break;
+
+            case "NoDriver" :
+                System.out.println("No available driver matched the order: "+ message.getOrderId() +" at this time." + "\n"
+                        + "But we will try our best to allocate one.\n");
+                getContext().system().scheduler().scheduleOnce(
+                        Duration.create(60, TimeUnit.SECONDS),
+                        getSender(),
+                        new DriverService.InternalMsgSlaveDriver(message.getOrderId()),
+                        getContext().dispatcher(),
+                        getSelf()
+                );
+                orderServiceActor.tell(message, getSelf());
+                break;
+
+            case "Delivered" :
+                DriverService.InternalMsgFreeDriver msgFreeDriver = new DriverService.InternalMsgFreeDriver(
+                        message.getOrderId(), Integer.parseInt(message.getMessage()));
+                driverServiceActor.tell(msgFreeDriver, getSelf());
+
+                DeliveryQueryMessage deliveryQueryMessage = new DeliveryQueryMessage(
+                        message.getOrderId(), "Delivered",
+                        "Your order " + message.getOrderId()
+                                + " is delivered at "
+                                + LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss")) + "."
+                );
+                orderServiceActor.tell(deliveryQueryMessage, getSelf());
+                System.out.println("Order: " + message.getOrderId() + " is delivered.\n");
+                break;
+        }
+
+    }
+
+    private void processDelivery(OrderDeliveryMessage message) {
 
         int orderId = message.getOrderId();
         String customerAddress = message.getCustomer().getCustomerAddress();
@@ -49,53 +77,19 @@ public class DeliveryService extends AbstractActor {
         String restaurantAddress = message.getOrder().getRestaurant().getRestaurantAddress();
         String restaurantPhone = message.getOrder().getRestaurant().getRestaurantPhone();
 
-        System.out.println("ORDER DISPATCHED" + "\n"
-                           + "Order ID: " + orderId + "\n"
-                           + "Customer Address: " + customerAddress + "\n"
-                           + "Customer Phone: " + customerPhone + "\n"
-                           + "Restaurant Address: " + restaurantAddress + "\n"
-                           + "Restaurant Phone: " + restaurantPhone + "\n");
+        System.out.println("NEW DELIVER TASK CREATED" + "\n"
+                    + "Order ID: " + orderId + "\n"
+                    + "Customer Address: " + customerAddress + "\n"
+                    + "Customer Phone: " + customerPhone + "\n"
+                    + "Restaurant Address: " + restaurantAddress + "\n"
+                    + "Restaurant Phone: " + restaurantPhone + "\n");
+        System.out.println("We are allocating suitable driver at this time.\n");
+        DriverService.InternalMsgSlaveDriver internalMsgSlaveDriver = new DriverService.InternalMsgSlaveDriver(
+                message.getOrderId());
+        driverServiceActor.tell(internalMsgSlaveDriver, getSelf());
+
+        DeliveryQueryMessage deliveryQueryMessage = new DeliveryQueryMessage(orderId,
+                "Pending", "Allocating suitable driver.");
+        orderServiceActor.tell(deliveryQueryMessage, getSelf());
     }
-
-    private void checkDeliveryStatus(CheckDeliveryStatus message) {
-        final ActorRef sender = getSender();
-        executorService.submit(() -> {
-            TummySavior tummySavior = new TummySavior();
-            if(tummySavior.tummySaviorDelivered()) {
-                scheduler.cancel();
-                if(orderServiceActor != null) {
-                    OrderDeliveredMessage orderDeliveredMessage = new OrderDeliveredMessage(
-                            message.getOrderId(), "DELIVERED");
-                    orderServiceActor.tell(orderDeliveredMessage, getSelf());
-                }
-                OrderDeliveringMessage orderDeliveringMessage = new OrderDeliveringMessage(
-                        message.getOrderId(), "DELIVERED", "Order delivered");
-                sender.tell(orderDeliveringMessage, getSelf());
-            } else {
-                OrderDeliveringMessage orderDeliveringMessage = new OrderDeliveringMessage(
-                        message.getOrderId(), "UNDELIVERED", "Food undelivered yet");
-                sender.tell(orderDeliveringMessage, getSelf());
-            }
-        });
-    }
-
-    @Override
-    public void postStop() {
-        if (scheduler != null) {
-            scheduler.cancel();
-        }
-        executorService.shutdown();
-    }
-
-    private static class CheckDeliveryStatus{
-        private final OrderDeliveryMessage orderDeliveryMessage;
-        CheckDeliveryStatus(OrderDeliveryMessage message) {
-            this.orderDeliveryMessage = message;
-        }
-
-        public int getOrderId() {
-            return orderDeliveryMessage.getOrderId();
-        }
-    }
-
 }
