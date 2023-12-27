@@ -13,7 +13,6 @@ public class ActorAllocator {
     }
 
     public static ActorSelection getOrderActor(ActorSystem system) {
-        String orderHost = "localhost";
-        return system.actorSelection("akka.tcp://order-system@" + orderHost + ":2553/user/order-service");
+        return system.actorSelection("akka.tcp://order-system@localhost:2553/user/order-service");
     }
 }
