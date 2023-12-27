@@ -33,17 +33,18 @@ public class PaymentServiceTest {
         ActorRef paymentService = system.actorOf(Props.create(PaymentService.class));
 
         int testOrderId = 123;
+        int customerID = 456;
         double testTotalPrice = 100.0;
-        String testPaymentMethod = "Credit Card";
+        String testPaymentMethod = "Cash";
 
-        OrderPaymentMessage testOrderPaymentMessage = new OrderPaymentMessage(testOrderId, testTotalPrice, testPaymentMethod);
+        OrderPaymentMessage testOrderPaymentMessage = new OrderPaymentMessage(testOrderId, customerID, testTotalPrice, testPaymentMethod);
 
         paymentService.tell(testOrderPaymentMessage, probe.getRef());
 
         PaymentStatusMessage response = probe.expectMsgClass(PaymentStatusMessage.class);
 
-        assertEquals("SUCCESS", response.getStatus());
-        assertEquals("Payment processed successfully.", response.getMessage());
+        assertEquals("CASH-UNPAID", response.getStatus());
+        assertEquals("Driver will collect cash.", response.getMessage());
         assertEquals(testOrderId, response.getOrderId());
     }
 }

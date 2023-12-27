@@ -1,5 +1,17 @@
 package service;
 
+import java.util.Scanner;
+
+import org.bson.Document;
+import org.bson.conversions.Bson;
+
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Updates;
+
 import actors.ActorProvider;
 import akka.actor.AbstractActor;
 import akka.actor.ActorRef;
@@ -8,7 +20,7 @@ import akka.actor.ActorSystem;
 import ie.foodie.messages.*;
 
 public class PaymentService extends AbstractActor {
-
+    
     private ActorSelection orderServiceActor;
     private ActorSelection userActor;
 
@@ -32,8 +44,6 @@ public class PaymentService extends AbstractActor {
 
     private void processPayment(OrderPaymentMessage message) {
 
-
-        // Process the payment
         int orderId = message.getOrderId();
         double totalPrice = message.getTotalPrice();
         String paymentMethod = message.getPaymentMethod();
@@ -43,8 +53,8 @@ public class PaymentService extends AbstractActor {
                            ", Total Price: " + totalPrice + 
                            ", Payment Method: " + paymentMethod);
 
-        if (paymentMethod == "Card"){
-            boolean isPaymentSuccessful = processWithPaymentGateway(message);
+        if (paymentMethod.equalsIgnoreCase("Card")){
+            boolean isPaymentSuccessful = processWithPaymentGateway(message);            
         
             if (isPaymentSuccessful) {
                 // Send success message to OrderService
@@ -59,6 +69,7 @@ public class PaymentService extends AbstractActor {
         
                 // Send success message to UserActor
                 sender.tell(statusMessage, getSelf());
+                // System.out.println(statusMessage);
             } else {
 
                 // Handle payment failure scenario
@@ -83,6 +94,4 @@ public class PaymentService extends AbstractActor {
         // For now, let's assume the payment is always successful
         return true; // Placeholder for actual implementation
     }
-
-    // Additional methods and functionality as needed
 }
