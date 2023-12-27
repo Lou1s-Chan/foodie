@@ -68,17 +68,6 @@ public class DriverService extends AbstractActorWithTimers {
         }
     }
 
-    public static class InternalMsgNoDriver {
-        private final int orderId;
-        public InternalMsgNoDriver(int orderId) {
-            this.orderId = orderId;
-        }
-
-        public int getOrderId() {
-            return orderId;
-        }
-    }
-
     private void startDelivery(InternalMsgSlaveDriver msgSlaveDriver) {
 
         Document bestDriver = tummySavior.BestDriver();
@@ -112,13 +101,14 @@ public class DriverService extends AbstractActorWithTimers {
             getContext().system().scheduler().scheduleOnce(
                     Duration.create(estTimeLong, TimeUnit.SECONDS),
                     getSender(),
-                    new DeliveryCompleteMessage(msgSlaveDriver.getOrderId(), driverId.toString()),
+                    new DeliveryQueryMessage(msgSlaveDriver.getOrderId(), "Delivered", driverId.toString()),
                     getContext().dispatcher(),
                     getSelf()
             );
         } else {
-            InternalMsgNoDriver msgNoDriver = new InternalMsgNoDriver(msgSlaveDriver.getOrderId());
-            getSender().tell(msgNoDriver, getSelf());
+            DeliveryQueryMessage deliveryQueryMessage = new DeliveryQueryMessage(msgSlaveDriver.getOrderId(),
+                    "NoDriver", "No available driver at this time.");
+            getSender().tell(deliveryQueryMessage, getSelf());
         }
     }
 

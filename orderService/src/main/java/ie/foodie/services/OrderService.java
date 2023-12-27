@@ -2,6 +2,8 @@ package ie.foodie.services;
 
 import akka.actor.AbstractActor;
 import akka.actor.ActorRef;
+import akka.actor.ActorSelection;
+import akka.actor.ActorSystem;
 import ie.foodie.actors.ActorProvider;
 import ie.foodie.database.OrderMongodbDao;
 import ie.foodie.messages.*;
@@ -12,7 +14,18 @@ public class OrderService extends AbstractActor {
     private final OrderMongodbDao orderDao;
     private final ActorRef deliveryActor;
     private final ActorRef restaurantActor;
+//    private ActorSelection deliveryActor;
+//    private ActorSelection restaurantActor;
 
+
+//    @Override
+//    public void preStart() {
+//        ActorSystem system = getContext().getSystem();
+//        this.deliveryActor =
+//                ActorProvider.getDeliveryActor(system);
+//        this.restaurantActor =
+//                ActorProvider.getRestaurantActor(system);
+//    }
     public OrderService() {
         deliveryActor =
                 ActorProvider.getDeliveryActor(getContext().getSystem()).anchor();
@@ -22,12 +35,12 @@ public class OrderService extends AbstractActor {
     }
 
     //for test
-    public OrderService(ActorRef deliveryActor, ActorRef restaurantActor,
-                        OrderMongodbDao orderDao) {
-        this.deliveryActor = deliveryActor;
-        this.restaurantActor = restaurantActor;
-        this.orderDao = orderDao;
-    }
+//    public OrderService(ActorRef deliveryActor, ActorRef restaurantActor,
+//                        OrderMongodbDao orderDao) {
+//        this.deliveryActor = deliveryActor;
+//        this.restaurantActor = restaurantActor;
+//        this.orderDao = orderDao;
+//    }
 
     @Override
     public Receive createReceive() {

@@ -9,7 +9,7 @@ public class ActorProvider {
     public static ActorSelection getDeliveryActor(ActorSystem system) {
         String deliveryHost = "localhost";
         // akka.<protocol>://<actorsystemname>@<hostname>:<port>/<actor path>
-        return system.actorSelection("akka.tcp://deliveryRef@" + deliveryHost + ":2554/user/delivery-service");
+        return system.actorSelection("akka.tcp://delivery-system@" + deliveryHost + ":2554/user/delivery-service");
     }
 
     public static ActorSelection getRestaurantActor(ActorSystem system) {
