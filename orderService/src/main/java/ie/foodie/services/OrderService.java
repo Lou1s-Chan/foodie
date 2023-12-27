@@ -14,10 +14,10 @@ public class OrderService extends AbstractActor {
     private final OrderMongodbDao orderDao;
     private final ActorRef deliveryActor;
     private final ActorRef restaurantActor;
-    private final ActorRef userActor;
+
 //    private ActorSelection deliveryActor;
 //    private ActorSelection restaurantActor;
-//    private ActorSelection userActor;
+    private ActorRef userActor = null;
 
 
 //    @Override
@@ -27,25 +27,22 @@ public class OrderService extends AbstractActor {
 //                ActorProvider.getDeliveryActor(system);
 //        this.restaurantActor =
 //                ActorProvider.getRestaurantActor(system);
-//        this.userActor =
-//                ActorProvider.getUserActor(system);
 //    }
     public OrderService() {
         deliveryActor =
                 ActorProvider.getDeliveryActor(getContext().getSystem()).anchor();
         restaurantActor =
                 ActorProvider.getRestaurantActor(getContext().getSystem()).anchor();
-        userActor =
-                ActorProvider.getUserActor(getContext().getSystem()).anchor();
+//        userActor =
+//                ActorProvider.getUserActor(getContext().getSystem()).anchor();
         orderDao = new OrderMongodbDao("mongodb+srv://foodie:ccOUvdosBLzDprGM@foodie.cli5iha.mongodb.net/?retryWrites=true&w=majority");
     }
 
     //for test
-    public OrderService(ActorRef deliveryActor, ActorRef restaurantActor, ActorRef userActor,
+    public OrderService(ActorRef deliveryActor, ActorRef restaurantActor,
                         OrderMongodbDao orderDao) {
         this.deliveryActor = deliveryActor;
         this.restaurantActor = restaurantActor;
-        this.userActor = userActor;
         this.orderDao = orderDao;
     }
 
@@ -53,6 +50,7 @@ public class OrderService extends AbstractActor {
     public Receive createReceive() {
         return receiveBuilder()
                 .match(CustomerOrderMessage.class, msg -> {
+                    this.userActor = getSender();
                     System.out.println("******** Received order message: " + msg.getCustomer().getCustomerId());
                     // calculate price and store to db
                     OrderConfirmMessage orderConfirmMessage =
