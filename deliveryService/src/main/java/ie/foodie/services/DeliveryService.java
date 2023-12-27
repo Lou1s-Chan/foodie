@@ -59,7 +59,7 @@ public class DeliveryService extends AbstractActorWithTimers {
                 DeliveryQueryMessage deliveryQueryMessage = new DeliveryQueryMessage(
                         message.getOrderId(), "Delivered",
                         "Your order " + message.getOrderId()
-                                + "is delivered at"
+                                + " is delivered at "
                                 + LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss")) + "."
                 );
                 orderServiceActor.tell(deliveryQueryMessage, getSelf());
