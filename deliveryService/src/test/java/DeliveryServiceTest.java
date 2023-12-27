@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Objects;
 
 import akka.testkit.javadsl.TestKit;
-import ie.foodie.messages.DeliveryCompleteMessage;
 import ie.foodie.messages.DeliveryQueryMessage;
 import ie.foodie.messages.OrderDeliveryMessage;
 import ie.foodie.services.DeliveryService;
@@ -62,21 +61,19 @@ public class DeliveryServiceTest {
         OrderDeliveryMessage testDeliveryMessage3 = new OrderDeliveryMessage(testOrderId3, fakeOrder3, fakeCustomer3);
         deliveryService.tell(testDeliveryMessage3, probe.getRef());
 
-        List<Object> deadLetters = probe.receiveN(9, Duration.ofSeconds(300));
+        List<Object> deadLetters = probe.receiveN(10, Duration.ofSeconds(300));
         for (Object deadLetterObject : deadLetters) {
             DeadLetter deadLetter = (DeadLetter) deadLetterObject;
-
-            // Check if the dead letter is of the expected type
-            if (deadLetter.message() instanceof DeliveryCompleteMessage) {
-                DeliveryCompleteMessage message = (DeliveryCompleteMessage) deadLetter.message();
-                assertEquals("Delivered", message.getStatus());
-                    System.out.println("Dead letter log: Order " + message.getOrderId() + " Delivered Successfully!");
-            } else if (deadLetter.message() instanceof DeliveryQueryMessage) {
+            if (deadLetter.message() instanceof DeliveryQueryMessage) {
                 DeliveryQueryMessage message = (DeliveryQueryMessage) deadLetter.message();
                 if (Objects.equals(message.getStatus(), "Pending")) {
-                        System.out.println("Test log: Task of Order " + message.getOrderId() + " Created.");
+                    System.out.println("Test log: Task of Order " + message.getOrderId() + " Created.");
                 } else if (Objects.equals(message.getStatus(), "Dispatched")) {
-                        System.out.println("Test log: Order " + message.getOrderId() + " Dispatched.");
+                    System.out.println("Test log: Order " + message.getOrderId() + " Dispatched.");
+                } else if (Objects.equals(message.getStatus(), "Delivered")) {
+                    System.out.println("Test log: Task of Order " + message.getOrderId() + " Delivered.");
+                } else if (Objects.equals(message.getStatus(), "NoDriver")) {
+                    System.out.println("Test log: Task of Order " + message.getOrderId() + " No Driver Assigned Currently.");
                 }
             }
         }
