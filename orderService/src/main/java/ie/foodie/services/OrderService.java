@@ -12,8 +12,8 @@ import ie.foodie.printer.MessagePrinter;
 
 public class OrderService extends AbstractActor {
     private final OrderMongodbDao orderDao;
-    private final ActorRef deliveryActor;
-    private final ActorRef restaurantActor;
+    private final ActorSelection deliveryActor;
+    private final ActorSelection restaurantActor;
 
 //    private ActorSelection deliveryActor;
 //    private ActorSelection restaurantActor;
@@ -30,16 +30,16 @@ public class OrderService extends AbstractActor {
 //    }
     public OrderService() {
         deliveryActor =
-                ActorProvider.getDeliveryActor(getContext().getSystem()).anchor();
+                ActorProvider.getDeliveryActor(getContext().getSystem());
         restaurantActor =
-                ActorProvider.getRestaurantActor(getContext().getSystem()).anchor();
+                ActorProvider.getRestaurantActor(getContext().getSystem());
 //        userActor =
 //                ActorProvider.getUserActor(getContext().getSystem()).anchor();
         orderDao = new OrderMongodbDao("mongodb+srv://foodie:ccOUvdosBLzDprGM@foodie.cli5iha.mongodb.net/?retryWrites=true&w=majority");
     }
 
     //for test
-    public OrderService(ActorRef deliveryActor, ActorRef restaurantActor,
+    public OrderService(ActorSelection deliveryActor, ActorSelection restaurantActor,
                         OrderMongodbDao orderDao) {
         this.deliveryActor = deliveryActor;
         this.restaurantActor = restaurantActor;
