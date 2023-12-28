@@ -2,6 +2,7 @@ package service;
 
 import java.util.Scanner;
 
+import ie.foodie.actors.FoodieActor;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 
@@ -19,7 +20,7 @@ import akka.actor.ActorSelection;
 import akka.actor.ActorSystem;
 import ie.foodie.messages.*;
 
-public class PaymentService extends AbstractActor {
+public class PaymentService extends FoodieActor {
     
     private ActorSelection orderServiceActor;
     private ActorSelection userActor;

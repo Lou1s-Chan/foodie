@@ -6,6 +6,7 @@ import akka.japi.pf.ReceiveBuilder;
 //import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.client.*;
 import com.mongodb.client.model.Sorts;
+import ie.foodie.actors.FoodieActor;
 import ie.foodie.messages.MenuItemsResponse;
 import ie.foodie.messages.RestaurantOrderMessage;
 import ie.foodie.messages.RestaurantQueryMessage;
@@ -19,7 +20,7 @@ import service.SSE.SSEController;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ResActor extends AbstractActor {
+public class ResActor extends FoodieActor {
     private final MongoClient mongoClient;
     private final MongoDatabase database;
     private final String dbURL = "mongodb+srv://foodie:ccOUvdosBLzDprGM@foodie.cli5iha.mongodb.net/?retryWrites=true&w=majority";

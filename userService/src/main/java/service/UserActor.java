@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+import ie.foodie.actors.FoodieActor;
 import ie.foodie.messages.*;
 import org.bson.Document;
 import org.bson.conversions.Bson;
@@ -27,7 +28,7 @@ import ie.foodie.messages.models.Order;
 import ie.foodie.messages.models.Order.OrderDetail;
 import ie.foodie.messages.models.Order.Restaurant;
 
-public class UserActor extends AbstractActor {
+public class UserActor extends FoodieActor {
     private int customerId;
     private String customerAddress;
     private String customerPhone;

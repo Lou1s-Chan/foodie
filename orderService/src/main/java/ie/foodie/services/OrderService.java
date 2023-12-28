@@ -1,16 +1,15 @@
 package ie.foodie.services;
 
-import akka.actor.AbstractActor;
 import akka.actor.ActorRef;
 import akka.actor.ActorSelection;
-import akka.actor.ActorSystem;
 import ie.foodie.actors.ActorProvider;
+import ie.foodie.actors.FoodieActor;
 import ie.foodie.database.OrderMongodbDao;
 import ie.foodie.messages.*;
 import ie.foodie.messages.models.Order;
 import ie.foodie.printer.MessagePrinter;
 
-public class OrderService extends AbstractActor {
+public class OrderService extends FoodieActor {
     private final OrderMongodbDao orderDao;
 
     private final ActorSelection deliveryActor;
@@ -51,7 +50,7 @@ public class OrderService extends AbstractActor {
                     getSender().tell(orderConfirmMessage, getSelf());
                 })
                 // .match(PaymentConfirmMessage.class, msg -> {
-                .match(PaymentStatusMessage.class, msg -> {                        
+                .match(PaymentStatusMessage.class, msg -> {
                     System.out.println("******** Received payment message: ");
                     MessagePrinter.printPaymentConfirmMessage(msg);
                     // change status in db
@@ -85,7 +84,7 @@ public class OrderService extends AbstractActor {
                 })
                 .match(DeliveryQueryMessage.class, msg -> {
                     userActor.tell(msg, getSelf());
-        })
+                })
                 .build();
     }
 

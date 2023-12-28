@@ -1,5 +1,6 @@
 package ie.foodie.services;
 
+import ie.foodie.actors.FoodieActor;
 import scala.concurrent.duration.Duration;
 import akka.actor.*;
 import ie.foodie.actors.DriverActorProvider;
@@ -9,7 +10,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.concurrent.TimeUnit;
 
-public class DeliveryService extends AbstractActorWithTimers {
+public class DeliveryService extends FoodieActor {
 
     private ActorSelection driverServiceActor;
     private ActorRef orderServiceActor = null;

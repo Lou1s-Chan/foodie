@@ -1,6 +1,8 @@
 package ie.foodie.services;
 
+import akka.actor.AbstractActor;
 import akka.actor.AbstractActorWithTimers;
+import ie.foodie.actors.FoodieActor;
 import ie.foodie.messages.*;
 import org.bson.Document;
 import scala.concurrent.duration.Duration;
@@ -9,7 +11,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.concurrent.TimeUnit;
 
-public class DriverService extends AbstractActorWithTimers {
+public class DriverService extends FoodieActor {
     private TummySavior tummySavior = new TummySavior();
 
     public DriverService() {}
