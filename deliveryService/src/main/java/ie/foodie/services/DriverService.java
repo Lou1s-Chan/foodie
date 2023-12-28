@@ -1,9 +1,6 @@
 package ie.foodie.services;
 
 import akka.actor.AbstractActorWithTimers;
-import akka.actor.ActorSelection;
-import akka.actor.ActorSystem;
-import ie.foodie.actors.ActorAllocator;
 import ie.foodie.messages.*;
 import org.bson.Document;
 import scala.concurrent.duration.Duration;
@@ -13,17 +10,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.concurrent.TimeUnit;
 
 public class DriverService extends AbstractActorWithTimers {
-    private ActorSelection deliveryServiceActor;
     private TummySavior tummySavior = new TummySavior();
 
     public DriverService() {}
-
-    @Override
-    public void preStart() {
-        ActorSystem system = getContext().getSystem();
-        this.tummySavior = new TummySavior();
-        this.deliveryServiceActor = ActorAllocator.getDeliveryActor(system);
-    }
 
     @Override
     public Receive createReceive() {
