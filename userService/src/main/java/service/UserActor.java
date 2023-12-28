@@ -16,17 +16,20 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Updates;
 
-import akka.actor.AbstractActor;
-import akka.actor.ActorRef;
 import akka.actor.ActorSelection;
 import akka.actor.ActorSystem;
-import akka.actor.Props;
 import akka.japi.pf.ReceiveBuilder;
 import ie.foodie.messages.RestaurantsResponse.RestaurantData;
 import ie.foodie.messages.models.Customer;
 import ie.foodie.messages.models.Order;
 import ie.foodie.messages.models.Order.OrderDetail;
 import ie.foodie.messages.models.Order.Restaurant;
+
+import javax.crypto.Cipher;
+import javax.crypto.spec.SecretKeySpec;
+import java.security.Key;
+import java.util.Base64;
+
 
 public class UserActor extends FoodieActor {
     private int customerId;
@@ -60,10 +63,8 @@ public class UserActor extends FoodieActor {
                     })
             .match(OrderConfirmMessage.class, this::requestPayment)                    
             .match(PaymentStatusMessage.class, msg -> {
-                // Handle the payment status message
                 System.out.println("Payment Status for Order ID " + msg.getOrderId() + ": " 
                                     + msg.getStatus() + " - " + msg.getMessage());
-                // Additional logic based on the payment status
             })
             .match(RestaurantsResponse.class,
                     msg -> {
@@ -174,87 +175,120 @@ public class UserActor extends FoodieActor {
     private void requestPayment(OrderConfirmMessage msg){
         double amountToPay = msg.getTotalPrice();
         int orderId = msg.getOrderId();
-
+    
         System.out.print("Enter payment method (Card/Cash): ");
         String paymentMethod = scanner.nextLine().trim();
     
-        // Validate input and default to Card if invalid
         if (!paymentMethod.equalsIgnoreCase("Card") && !paymentMethod.equalsIgnoreCase("Cash")) {
             System.out.println("Invalid input. Defaulting to Card.");
             paymentMethod = "Card";
         }
-
+    
         if (paymentMethod.equalsIgnoreCase("Card")) {
-
-            System.out.println("Checking saved card for Customer " + customerId + 1);
             String encryptedCardNumber = getEncryptedCardNumber(this.customerId);
-
-            String cardNumber;  
-            
-            try (Scanner scanner = new Scanner(System.in)) {
-                if (encryptedCardNumber != null) {
-                    // Decrypt the card number for display purposes
+            String cardNumber = null;
+    
+            if (encryptedCardNumber != null) {
+                try {
                     String decryptedCardNumber = decryptCardNumber(encryptedCardNumber);
                     System.out.println("Your saved card number is: " + maskedCardNumber(decryptedCardNumber));
                     System.out.print("Do you want to use this card? (yes/no): ");
                     String response = scanner.nextLine().trim();
-
+    
                     if (response.equalsIgnoreCase("yes")) {
                         cardNumber = decryptedCardNumber;
                     } else {
-                        System.out.print("Please enter your new card number: ");
-                        cardNumber = scanner.nextLine().trim();
-                        encryptedCardNumber = encryptCardNumber(cardNumber);
-                        updateUserCardNumberInDatabase(this.customerId, encryptedCardNumber);
+                        cardNumber = getCardNumberFromUser(); // Call to get new card number
+                        encryptedCardNumber = encryptCardNumber(cardNumber); // Encrypt the new card number
+                        updateUserCardNumberInDatabase(this.customerId, encryptedCardNumber); // Update the database
                     }
-                } else {
-                    System.out.print("Please enter your card number: ");
-                    cardNumber = scanner.nextLine().trim();
-                    encryptedCardNumber = encryptCardNumber(cardNumber);
-                    updateUserCardNumberInDatabase(this.customerId, encryptedCardNumber);
+                } catch (IllegalArgumentException e) {
+                    cardNumber = getCardNumberFromUser(); // Call to get new card number
+                    encryptedCardNumber = encryptCardNumber(cardNumber); // Encrypt the new card number
+                    updateUserCardNumberInDatabase(this.customerId, encryptedCardNumber); // Update the database
                 }
+            } else {
+                cardNumber = getCardNumberFromUser(); // Call to get new card number
+                encryptedCardNumber = encryptCardNumber(cardNumber); // Encrypt the new card number
+                updateUserCardNumberInDatabase(this.customerId, encryptedCardNumber); // Update the database
             }
-        }                                                   
     
-        OrderPaymentMessage paymentMessage = new OrderPaymentMessage(orderId, this.customerId, amountToPay, paymentMethod);
-        paymentServiceActor.tell(paymentMessage, getSelf());
+            if (cardNumber != null) {
+                OrderPaymentMessage paymentMessage = new OrderPaymentMessage(orderId, this.customerId, amountToPay, paymentMethod);
+                paymentServiceActor.tell(paymentMessage, getSelf());
+            } else {
+                System.out.println("Payment process aborted due to missing card number.");
+            }
+        } else {
+            OrderPaymentMessage paymentMessage = new OrderPaymentMessage(orderId, this.customerId, amountToPay, paymentMethod);
+            paymentServiceActor.tell(paymentMessage, getSelf());
+        }
     }
+        
+    
+    private String getCardNumberFromUser() {
+        System.out.print("Please enter your card number: ");
+        return scanner.nextLine().trim();
+    }
+    
 
     private String getEncryptedCardNumber(int customerId) {
-
+        String customerIdStr = String.format("%03d", customerId); // Assuming customerId is formatted as a string with leading zeros
+    
         mongoClient = MongoClients.create(dbURL);
         database = mongoClient.getDatabase("foodie");
         collection = database.getCollection("users");
-
-        System.out.println("Filter database for customerId " + customerId + 2);
-
-        Bson filter = Filters.eq("customerId", customerId);
-        System.out.println("Filtered " + filter + 3);
-
+    
+        Bson filter = Filters.eq("ID", customerIdStr);
         Document userDocument = collection.find(filter).first();
-        if (userDocument != null && userDocument.containsKey("cardNumber")) {
+    
+        if (userDocument != null) {
+            // Directly check if the retrieved card number is null
             String cardNumber = userDocument.getString("cardNumber");
-            System.out.println("Filtered card number: " + cardNumber + 4);
-            return cardNumber;
-        } else {
-            System.out.println("No filtered card number found" + 5);
-            return null; // No card number found
+            if (cardNumber != null && !cardNumber.isEmpty()) {
+                return cardNumber;
+            }
         }
-        
-    }
+        return null; // Return null if the document is not found or cardNumber is null
+    }    
+
+    private static final String AES = "AES";
+    private static final byte[] key = new byte[] { 'T', 'h', 'e', 'B', 'e', 's', 't', 'S', 'e', 'c', 'r', 'e', 't', 'K', 'e', 'y' };
 
     private String encryptCardNumber(String cardNumber) {
-    // Implement encryption logic here
-    // Example: use AES or similar encryption algorithm
-        String encryptedCardNumber = cardNumber;
-        return encryptedCardNumber; // Return the encrypted card number
+        try {
+            Key aesKey = new SecretKeySpec(key, AES);
+            Cipher cipher = Cipher.getInstance(AES);
+            cipher.init(Cipher.ENCRYPT_MODE, aesKey);
+            byte[] encrypted = cipher.doFinal(cardNumber.getBytes());
+            return Base64.getEncoder().encodeToString(encrypted);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     private String decryptCardNumber(String encryptedCardNumber) {
-        // Implement decryption logic here
-        String decryptedCardNumber = encryptedCardNumber;
-        return decryptedCardNumber; // Return the decrypted card number
+        try {
+            // Validate if the encrypted string is Base64 encoded
+            if (Base64.getDecoder().decode(encryptedCardNumber) == null) {
+                System.out.println("Invalid Base64 encoding");
+                return null;
+            }
+    
+            Key aesKey = new SecretKeySpec(key, AES);
+            Cipher cipher = Cipher.getInstance(AES);
+            cipher.init(Cipher.DECRYPT_MODE, aesKey);
+            byte[] decrypted = cipher.doFinal(Base64.getDecoder().decode(encryptedCardNumber));
+            return new String(decrypted);
+        } catch (IllegalArgumentException e) {
+            return null;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
+    
 
     private String maskedCardNumber(String cardNumber) {
         // Return a masked version of the card number, like "**** **** **** 1234"
@@ -262,9 +296,10 @@ public class UserActor extends FoodieActor {
     }
 
     private void updateUserCardNumberInDatabase(int customerId, String encryptedCardNumber) {
-        Bson filter = Filters.eq("customerId", customerId);
+        String customerIdStr = String.format("%03d", customerId);  // Convert to a string like "001"
+    
+        Bson filter = Filters.eq("ID", customerIdStr);
         Bson updateOperation = Updates.set("cardNumber", encryptedCardNumber);
         collection.updateOne(filter, updateOperation);
-        System.out.println(encryptedCardNumber + " is updated to database.");
     }
 }
