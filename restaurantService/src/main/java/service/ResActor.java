@@ -217,6 +217,9 @@ public class ResActor extends AbstractActor {
                         sseController.sendMessageToClients(jsonMessage);
                     }
                 })
+                .match(String.class, msg -> {
+                    System.out.println("Received message from: " + getSender());
+                })
                 .build();
     }
     public static class OrderDetailDTO {

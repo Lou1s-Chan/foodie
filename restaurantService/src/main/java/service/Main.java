@@ -7,7 +7,6 @@ import akka.actor.Props;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import service.SSE.SSEController;
 
 
@@ -24,7 +23,7 @@ public class Main {
 
 
         try {
-            String OrderPath = "akka.tcp://order-system@order-host:2553/user/order-service";
+            String OrderPath = "akka.tcp://order-system@localhost:2553/user/order-service";
             ActorSelection orderActor = system.actorSelection(OrderPath);
             System.out.println("remote order Actor: " + orderActor);
 
