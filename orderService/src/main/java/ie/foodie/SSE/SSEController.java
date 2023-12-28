@@ -1,10 +1,11 @@
-package service.SSE;
+package ie.foodie.SSE;
 
 import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
-import org.springframework.web.bind.annotation.CrossOrigin;
+
 import java.io.IOException;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
@@ -15,7 +16,7 @@ public class SSEController {
 
     private final CopyOnWriteArrayList<SseEmitter> emitters = new CopyOnWriteArrayList<>();
     @CrossOrigin(origins = "http://localhost:3000")
-    @GetMapping("/restaurant_stream")
+    @GetMapping("/order_stream")
     public SseEmitter stream() {
         SseEmitter emitter = createEmitter();
         this.emitters.add(emitter);
