@@ -1,27 +1,26 @@
 package ie.foodie.services;
 
+import ie.foodie.actors.FoodieActor;
 import scala.concurrent.duration.Duration;
 import akka.actor.*;
-import ie.foodie.actors.ActorAllocator;
+import ie.foodie.actors.DriverActorProvider;
 import ie.foodie.messages.*;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.concurrent.TimeUnit;
 
-public class DeliveryService extends AbstractActorWithTimers {
+public class DeliveryService extends FoodieActor {
 
-    private ActorSelection orderServiceActor;
     private ActorSelection driverServiceActor;
+    private ActorRef orderServiceActor = null;
 
     public DeliveryService() {}
 
     @Override
     public void preStart() {
         ActorSystem system = getContext().getSystem();
-
-        this.orderServiceActor = ActorAllocator.getOrderActor(system);
-        this.driverServiceActor = ActorAllocator.getDriverActor(system);
+        this.driverServiceActor = DriverActorProvider.getDriverActor(system);
     }
 
     @Override
@@ -70,6 +69,7 @@ public class DeliveryService extends AbstractActorWithTimers {
     }
 
     private void processDelivery(OrderDeliveryMessage message) {
+        this.orderServiceActor = getSender();
 
         int orderId = message.getOrderId();
         String customerAddress = message.getCustomer().getCustomerAddress();
