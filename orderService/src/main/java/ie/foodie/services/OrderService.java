@@ -12,8 +12,10 @@ import ie.foodie.printer.MessagePrinter;
 
 public class OrderService extends AbstractActor {
     private final OrderMongodbDao orderDao;
+
     private final ActorRef deliveryActor;
     private final ActorRef restaurantActor;
+
     private ActorRef userActor = null;
 
     public OrderService() {
@@ -25,7 +27,7 @@ public class OrderService extends AbstractActor {
     }
 
     //for test
-    public OrderService(ActorRef deliveryActor, ActorRef restaurantActor,
+    public OrderService(ActorSelection deliveryActor, ActorSelection restaurantActor,
                         OrderMongodbDao orderDao) {
         this.deliveryActor = deliveryActor;
         this.restaurantActor = restaurantActor;

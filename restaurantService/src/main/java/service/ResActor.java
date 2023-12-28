@@ -3,6 +3,7 @@ package service;
 import akka.actor.AbstractActor;
 import akka.actor.ActorRef;
 import akka.japi.pf.ReceiveBuilder;
+//import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.client.*;
 import com.mongodb.client.model.Sorts;
 import ie.foodie.messages.MenuItemsResponse;
@@ -12,16 +13,36 @@ import ie.foodie.messages.RestaurantsResponse;
 import ie.foodie.messages.RestaurantsResponse.RestaurantData;
 import ie.foodie.messages.models.Order;
 import org.bson.Document;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import service.SSE.SSEController;
+
 import java.util.ArrayList;
+import java.util.List;
 
 public class ResActor extends AbstractActor {
     private final MongoClient mongoClient;
     private final MongoDatabase database;
     private final String dbURL = "mongodb+srv://foodie:ccOUvdosBLzDprGM@foodie.cli5iha.mongodb.net/?retryWrites=true&w=majority";
     private String restaurantName = "Unknown";
-    public ResActor(String dbUrlArg) {
+
+    private SSEController sseController;
+    public ResActor(String dbUrlArg, SSEController sseController) {
+        this.sseController = sseController;
         String finalDbUrl = dbUrlArg.length() > 0 ? dbUrlArg : this.dbURL;
         this.mongoClient = MongoClients.create(finalDbUrl);
+        this.database = mongoClient.getDatabase("foodie");
+        try {
+            database.listCollectionNames().first();
+            System.out.println("Connected to MongoDB collections successfully.");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    public ResActor(SSEController sseController) {
+        this.sseController = sseController;
+        this.mongoClient = MongoClients.create(this.dbURL);
         this.database = mongoClient.getDatabase("foodie");
         try {
             database.listCollectionNames().first();
@@ -112,6 +133,7 @@ public class ResActor extends AbstractActor {
         return menuItemsList;
     }
 
+
     @Override
     public Receive createReceive() {
         System.out.println("\n***Restaurant Service listener has been set up***\n");
@@ -122,6 +144,13 @@ public class ResActor extends AbstractActor {
                     String restaurantAddress = msg.getOrder().getRestaurant().getRestaurantAddress();
                     String restaurantPhone = msg.getOrder().getRestaurant().getRestaurantPhone();
                     findRestaurant(restaurantID);
+
+                    OrderDTO orderDTO = new OrderDTO();
+                    orderDTO.setCustomerId(msg.getCustomerId());
+                    orderDTO.setRestaurantId(msg.getOrder().getRestaurant().getRestaurantId());
+                    orderDTO.setRestaurantName(restaurantName); // Assuming restaurantName is already fetched
+                    orderDTO.setRestaurantAddress(msg.getOrder().getRestaurant().getRestaurantAddress());
+                    orderDTO.setRestaurantPhone(msg.getOrder().getRestaurant().getRestaurantPhone());
 
                     System.out.println("Received an order...");
                     System.out.println(repeat("=", 80));
@@ -141,16 +170,30 @@ public class ResActor extends AbstractActor {
 
                     System.out.println("+" + repeat("-", 77) + "+");
                     System.out.println("| Ordered Items" + repeat(" ", 63) + "|");
+
+                    List<OrderDetailDTO> orderDetails = new ArrayList<>();
+
                     for (Order.OrderDetail item : msg.getOrder().getOrderDetails()) {
                         String foodName = getFoodName(item.getFoodId());
-
                         String foodItemString = String.format(
                                 " - Food ID: %d, Food Name: %-20s, Price: %5.2f, Quantity: %d",
                                 item.getFoodId(), foodName, item.getPrice(), item.getQuantity());
                         System.out.println("| " + foodItemString + repeat(" ", 49 - foodItemString.length()) + "|");
+
+                        OrderDetailDTO detail = new OrderDetailDTO();
+                        detail.setFoodId(item.getFoodId());
+                        detail.setFoodName(getFoodName(item.getFoodId()));
+                        detail.setPrice(item.getPrice());
+                        detail.setQuantity(item.getQuantity());
+                        orderDetails.add(detail);
+
                     }
+                    orderDTO.setOrderDetails(orderDetails);
                     System.out.println("+" + repeat("-", 77) + "+");
                     getSender().tell("Order received", getSelf());
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    String jsonMessage = objectMapper.writeValueAsString(orderDTO);
+                    sseController.sendMessageToClients(jsonMessage);
                 })
                 .match(RestaurantQueryMessage.class, msg -> {
                     ActorRef sender = getSender();
@@ -158,17 +201,149 @@ public class ResActor extends AbstractActor {
                     if (msg.getQueryType() == RestaurantQueryMessage.QueryType.RESTAURANT_LIST) {
                         System.out.println("Restaurants list is requested.");
                         ArrayList<RestaurantData> restaurantList = fetchRestaurants();
-
                         sender.tell(new RestaurantsResponse(restaurantList), getSelf());
 
+                        ObjectMapper objectMapper = new ObjectMapper();
+                        String jsonMessage = objectMapper.writeValueAsString("Restaurant list sent to user.");
+                        sseController.sendMessageToClients(jsonMessage);
                         System.out.println("Restaurant List send back to user service " + sender);
                     } else if (msg.getQueryType() == RestaurantQueryMessage.QueryType.MENU_REQUEST) {
                         System.out.println("Menu list is request for restaurant id: " + msg.getRestaurantID());
                         int restaurantId = msg.getRestaurantID();
                         ArrayList<MenuItemsResponse.MenuItemData> menuItemsList = fetchMenuItems(restaurantId);
                         getSender().tell(new MenuItemsResponse(menuItemsList), getSelf());
+                        ObjectMapper objectMapper = new ObjectMapper();
+                        String jsonMessage = objectMapper.writeValueAsString("Restaurant ID:" + restaurantId + " menu sent back to user");
+                        sseController.sendMessageToClients(jsonMessage);
                     }
+                })
+                .match(String.class, msg -> {
+                    System.out.println("Received message from: " + getSender());
                 })
                 .build();
     }
+    public static class OrderDetailDTO {
+        private int foodId;
+        private String foodName;
+        private double price;
+        private int quantity;
+
+        // Constructors
+        public OrderDetailDTO() {
+        }
+
+        public OrderDetailDTO(int foodId, String foodName, double price, int quantity) {
+            this.foodId = foodId;
+            this.foodName = foodName;
+            this.price = price;
+            this.quantity = quantity;
+        }
+
+        // Getters and setters
+        public int getFoodId() {
+            return foodId;
+        }
+
+        public void setFoodId(int foodId) {
+            this.foodId = foodId;
+        }
+
+        public String getFoodName() {
+            return foodName;
+        }
+
+        public void setFoodName(String foodName) {
+            this.foodName = foodName;
+        }
+
+        public double getPrice() {
+            return price;
+        }
+
+        public void setPrice(double price) {
+            this.price = price;
+        }
+
+        public int getQuantity() {
+            return quantity;
+        }
+
+        public void setQuantity(int quantity) {
+            this.quantity = quantity;
+        }
+    }
+
+    public static class OrderDTO {
+        private int customerId;
+        private int restaurantId;
+        private String restaurantName;
+        private String restaurantAddress;
+        private String restaurantPhone;
+        private List<OrderDetailDTO> orderDetails;
+
+        // Constructors
+        public OrderDTO() {
+        }
+
+        public OrderDTO(int customerId, int restaurantId, String restaurantName,
+                        String restaurantAddress, String restaurantPhone,
+                        List<OrderDetailDTO> orderDetails) {
+            this.customerId = customerId;
+            this.restaurantId = restaurantId;
+            this.restaurantName = restaurantName;
+            this.restaurantAddress = restaurantAddress;
+            this.restaurantPhone = restaurantPhone;
+            this.orderDetails = orderDetails;
+        }
+
+        // Getters and setters
+        public int getCustomerId() {
+            return customerId;
+        }
+
+        public void setCustomerId(int customerId) {
+            this.customerId = customerId;
+        }
+
+        public int getRestaurantId() {
+            return restaurantId;
+        }
+
+        public void setRestaurantId(int restaurantId) {
+            this.restaurantId = restaurantId;
+        }
+
+        public String getRestaurantName() {
+            return restaurantName;
+        }
+
+        public void setRestaurantName(String restaurantName) {
+            this.restaurantName = restaurantName;
+        }
+
+        public String getRestaurantAddress() {
+            return restaurantAddress;
+        }
+
+        public void setRestaurantAddress(String restaurantAddress) {
+            this.restaurantAddress = restaurantAddress;
+        }
+
+        public String getRestaurantPhone() {
+            return restaurantPhone;
+        }
+
+        public void setRestaurantPhone(String restaurantPhone) {
+            this.restaurantPhone = restaurantPhone;
+        }
+
+        public List<OrderDetailDTO> getOrderDetails() {
+            return orderDetails;
+        }
+
+        public void setOrderDetails(List<OrderDetailDTO> orderDetails) {
+            this.orderDetails = orderDetails;
+        }
+    }
+
 }
