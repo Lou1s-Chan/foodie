@@ -1,13 +1,25 @@
 package ie.foodie.messages;
 
+import akka.actor.ActorRef;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class MenuItemsResponse implements MessageSerializable {
     private final ArrayList<MenuItemData> menuItems;
+    private ActorRef userRef;
 
-    public MenuItemsResponse(ArrayList<MenuItemData> menuItems) {
+    public MenuItemsResponse(ArrayList<MenuItemData> menuItems, ActorRef userRef) {
         this.menuItems = menuItems;
+        this.userRef = userRef;
+    }
+
+    public ActorRef getUserRef() {
+        return userRef;
+    }
+
+    public void setUserRef(ActorRef userRef) {
+        this.userRef = userRef;
     }
 
     public MenuItemsResponse() {
