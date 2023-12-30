@@ -4,6 +4,7 @@ import akka.actor.AbstractActor;
 import akka.actor.AbstractActorWithTimers;
 import ie.foodie.actors.FoodieActor;
 import ie.foodie.messages.*;
+import ie.foodie.services.SSE.SSEController;
 import org.bson.Document;
 import scala.concurrent.duration.Duration;
 
@@ -12,9 +13,12 @@ import java.time.format.DateTimeFormatter;
 import java.util.concurrent.TimeUnit;
 
 public class DriverService extends FoodieActor {
+    private SSEController sseController;
     private TummySavior tummySavior = new TummySavior();
 
-    public DriverService() {}
+    public DriverService(SSEController sseController) {
+        this.sseController = sseController;
+    }
 
     @Override
     public Receive createReceive() {

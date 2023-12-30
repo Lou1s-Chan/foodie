@@ -214,7 +214,7 @@ public class ResActor extends FoodieActor {
                         ArrayList<MenuItemsResponse.MenuItemData> menuItemsList = fetchMenuItems(restaurantId);
                         getSender().tell(new MenuItemsResponse(menuItemsList), getSelf());
                         ObjectMapper objectMapper = new ObjectMapper();
-                        String jsonMessage = objectMapper.writeValueAsString("Restaurant ID:" + restaurantId + " menu sent back to user");
+                        String jsonMessage = objectMapper.writeValueAsString("Restaurant ID: " + restaurantId + " menu sent back to user");
                         sseController.sendMessageToClients(jsonMessage);
                     }
                 })

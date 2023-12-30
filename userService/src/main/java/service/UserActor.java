@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import ie.foodie.actors.FoodieActor;
 import ie.foodie.messages.*;
 import org.bson.Document;
@@ -16,6 +17,7 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Updates;
 
+
 import akka.actor.AbstractActor;
 import akka.actor.ActorRef;
 import akka.actor.ActorSelection;
@@ -27,6 +29,8 @@ import ie.foodie.messages.models.Customer;
 import ie.foodie.messages.models.Order;
 import ie.foodie.messages.models.Order.OrderDetail;
 import ie.foodie.messages.models.Order.Restaurant;
+import service.SSE.SSEController;
+
 
 public class UserActor extends FoodieActor {
     private int customerId;
@@ -39,9 +43,11 @@ public class UserActor extends FoodieActor {
     private Scanner scanner = new Scanner(System.in);
 
     private ActorSelection paymentServiceActor;
+    private SSEController sseController;
 
-    public UserActor(ActorSystem system) {
+    public UserActor(ActorSystem system, SSEController sseController) {
         this.paymentServiceActor = system.actorSelection("akka.tcp://payment-system@localhost:2555/user/payment-service");
+        this.sseController = sseController;
     }
 
     private static MongoClient mongoClient;
@@ -57,17 +63,35 @@ public class UserActor extends FoodieActor {
                         this.customerId = msg.getCustomerId();
                         customerAddress = msg.getCustomerAddress();
                         customerPhone = msg.getCustomerPhone();
+
+                        // SSE
+                        ObjectMapper objectMapper = new ObjectMapper();
+                        String jsonMessage = objectMapper.writeValueAsString("Customer has logged in, ID: " + msg.getCustomerId()
+                                + ", Address: " + msg.getCustomerAddress() + ", Phone: " + msg.getCustomerPhone() + ", Restaurants list requested.");
+                        sseController.sendMessageToClients(jsonMessage);
                     })
-            .match(OrderConfirmMessage.class, this::requestPayment)                    
+            .match(OrderConfirmMessage.class,
+                    this::requestPayment
+            )
             .match(PaymentStatusMessage.class, msg -> {
                 // Handle the payment status message
                 System.out.println("Payment Status for Order ID " + msg.getOrderId() + ": " 
                                     + msg.getStatus() + " - " + msg.getMessage());
                 // Additional logic based on the payment status
+                // SSE
+                ObjectMapper objectMapper = new ObjectMapper();
+                String jsonMessage = objectMapper.writeValueAsString("Payment Status for Order ID " + msg.getOrderId() + ": "
+                        + msg.getStatus() + " - " + msg.getMessage());
+                sseController.sendMessageToClients(jsonMessage);
             })
             .match(RestaurantsResponse.class,
                     msg -> {
                         System.out.println("Received back Restaurant Response...");
+                        // SSE
+                        ObjectMapper objectMapper = new ObjectMapper();
+                        String jsonMessage = objectMapper.writeValueAsString("Received back Restaurant Response...");
+                        sseController.sendMessageToClients(jsonMessage);
+
                         List<RestaurantData> restaurantList = msg.getRestaurants();
                         for (RestaurantData restaurant : restaurantList) {
                             System.out.println(restaurant.toString());
@@ -104,6 +128,11 @@ public class UserActor extends FoodieActor {
             .match(MenuItemsResponse.class,
                     msg -> {
                         System.out.println("Received back menu Response...");
+                        // SSE
+                        ObjectMapper objectMapper = new ObjectMapper();
+                        String jsonMessage = objectMapper.writeValueAsString("Received back menu Response...");
+                        sseController.sendMessageToClients(jsonMessage);
+
                         ArrayList<MenuItemsResponse.MenuItemData> menuList = msg.getMenuItems();
                         for (MenuItemsResponse.MenuItemData food : menuList) {
                             System.out.println(food.toString());
@@ -154,16 +183,33 @@ public class UserActor extends FoodieActor {
                                 new Customer(customerId, customerAddress, customerPhone), order), getSelf());
                     })
                 .match(DeliveryQueryMessage.class, msg -> {
+                    ObjectMapper objectMapper = new ObjectMapper();
                     switch (msg.getStatus()) {
                         case "Pending":
+                            // SSE
+                            String jsonMessage = objectMapper.writeValueAsString("We are finding suitable driver for order: " + msg.getOrderId());
+                            sseController.sendMessageToClients(jsonMessage);
+
                             System.out.println("We are finding suitable driver for order: " + msg.getOrderId() + ".\n");
                             break;
                         case "NoDriver":
+                            // SSE
+                            String jsonMessage2 = objectMapper.writeValueAsString("There no suitable driver for order: " + msg.getOrderId());
+                            sseController.sendMessageToClients(jsonMessage2);
+
                             System.out.println("There no suitable driver for order: " + msg.getOrderId() + ".\n"
                                     + "But we will try our best to allocate one.");
                             break;
                         case "Dispatched":
+                            // SSE
+                            String jsonMessage3 = objectMapper.writeValueAsString("Dispatched order ID:" + msg.getOrderId());
+                            sseController.sendMessageToClients(jsonMessage3);
+
                         case "Delivered":
+                            // SSE
+                            String jsonMessage4 = objectMapper.writeValueAsString("Delivered order ID: " + msg.getOrderId());
+                            sseController.sendMessageToClients(jsonMessage4);
+
                             System.out.println(msg.getMessage());
                             break;
                     }
