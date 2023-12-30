@@ -81,7 +81,7 @@ public class OrderService extends FoodieActor {
                         System.out.println("******** Sending restaurant message: ");
                         RestaurantOrderMessage restaurantOrderMessage = new
                                 RestaurantOrderMessage(customerOrderMessage.getCustomer().getCustomerId(),
-                                order);
+                                order, msg.getOrderId());
                         MessagePrinter.printRestaurantOrderMessage(restaurantOrderMessage);
                         restaurantActor.tell(restaurantOrderMessage, getSelf());
                         // print out delivery message sent

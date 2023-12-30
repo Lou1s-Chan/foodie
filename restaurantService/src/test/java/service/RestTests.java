@@ -37,7 +37,7 @@ public class RestTests implements MessageSerializable {
         RestaurantOrderMessage testOrder = new RestaurantOrderMessage(
                 1, new Order(
                 new Order.Restaurant(
-                        1, "555-1234", "123 Oak Street"), Arrays.asList(orderDetails)));
+                        1, "555-1234", "123 Oak Street"), Arrays.asList(orderDetails)), 210);
 
         RestaurantQueryMessage testQuery = new RestaurantQueryMessage(RestaurantQueryMessage.QueryType.RESTAURANT_LIST);
         RestaurantQueryMessage testMenuRequest = new RestaurantQueryMessage(RestaurantQueryMessage.QueryType.MENU_REQUEST, 3);

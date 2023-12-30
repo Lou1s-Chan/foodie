@@ -147,7 +147,9 @@ public class ResActor extends FoodieActor {
                     findRestaurant(restaurantID);
 
                     OrderDTO orderDTO = new OrderDTO();
+
                     orderDTO.setCustomerId(msg.getCustomerId());
+                    orderDTO.setOrderid(msg.getOrderID());
                     orderDTO.setRestaurantId(msg.getOrder().getRestaurant().getRestaurantId());
                     orderDTO.setRestaurantName(restaurantName); // Assuming restaurantName is already fetched
                     orderDTO.setRestaurantAddress(msg.getOrder().getRestaurant().getRestaurantAddress());
@@ -156,7 +158,7 @@ public class ResActor extends FoodieActor {
                     System.out.println("Received an order...");
                     System.out.println(repeat("=", 80));
                     System.out.println("+" + repeat("-", 50) + "+");
-                    System.out.println("| Order Details" + repeat(" ", 36) + "|");
+                    System.out.println("| Order Details (order ID:" + msg.getOrderID() + ")" + repeat(" ", 36) + "|");
                     System.out.println("| Customer id: " + customerID
                             + repeat(" ", 36 - Integer.toString(customerID).length()) + "|");
                     System.out.println("| - Restaurant ID     : " + restaurantID
@@ -245,6 +247,7 @@ public class ResActor extends FoodieActor {
             return foodId;
         }
 
+
         public void setFoodId(int foodId) {
             this.foodId = foodId;
         }
@@ -275,6 +278,7 @@ public class ResActor extends FoodieActor {
     }
 
     public static class OrderDTO {
+        private int orderid;
         private int customerId;
         private int restaurantId;
         private String restaurantName;
@@ -286,9 +290,10 @@ public class ResActor extends FoodieActor {
         public OrderDTO() {
         }
 
-        public OrderDTO(int customerId, int restaurantId, String restaurantName,
+        public OrderDTO(int orderid,int customerId, int restaurantId, String restaurantName,
                         String restaurantAddress, String restaurantPhone,
                         List<OrderDetailDTO> orderDetails) {
+            this.orderid = orderid;
             this.customerId = customerId;
             this.restaurantId = restaurantId;
             this.restaurantName = restaurantName;
@@ -297,6 +302,9 @@ public class ResActor extends FoodieActor {
             this.orderDetails = orderDetails;
         }
 
+        public int getOrderId() {return this.orderid;}
+
+        public void setOrderid(int id) {this.orderid = id;}
         // Getters and setters
         public int getCustomerId() {
             return customerId;

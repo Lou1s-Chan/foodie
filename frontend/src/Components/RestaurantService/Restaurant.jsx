@@ -102,7 +102,7 @@ const EventCard = ({ message }) => {
 
   const renderCardContent = (message) => {
     if (isObject(message)) {
-      return `Order for ${message.restaurantName} (ID: ${message.restaurantId})`;
+      return `Order ID: ${message.orderId}, for ${message.restaurantName} (restaurant ID: ${message.restaurantId})`;
     }
     return message;
   };
