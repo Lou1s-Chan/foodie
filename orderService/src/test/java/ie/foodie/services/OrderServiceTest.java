@@ -19,7 +19,8 @@ import java.util.concurrent.TimeUnit;
 
 public class OrderServiceTest {
     static ActorSystem system;
-    private final OrderMongodbDao orderDao = new OrderMongodbDao("mongodb+srv://foodie:DNiaOZmFoCMouwLG@foodie-test.odgtesd.mongodb.net/?retryWrites=true&w=majority");
+    private final OrderMongodbDao orderDao = new OrderMongodbDao(
+            "mongodb+srv://foodie:DNiaOZmFoCMouwLG@foodie-test.odgtesd.mongodb.net/?retryWrites=true&w=majority");
 
     @BeforeClass
     public static void setup() {
@@ -46,9 +47,10 @@ public class OrderServiceTest {
 
         // server send a RegisterMessage to broker
         orderService.tell(customerOrderMessage, customer.testActor());
-        OrderConfirmMessage orderConfirmMessage = customer.expectMsgClass(FiniteDuration.apply(10, TimeUnit.SECONDS), OrderConfirmMessage.class);
+        OrderConfirmMessage orderConfirmMessage = customer.expectMsgClass(FiniteDuration.apply(10, TimeUnit.SECONDS),
+                OrderConfirmMessage.class);
 
-//        Assert.assertEquals(1, orderConfirmMessage.getOrderId());
+        // Assert.assertEquals(1, orderConfirmMessage.getOrderId());
         Assert.assertEquals(91.98, orderConfirmMessage.getTotalPrice(), 0);
     }
 
@@ -56,13 +58,14 @@ public class OrderServiceTest {
     @Ignore
     public void testReceivePaymentConfirmMessage() {
         CustomerOrderMessage orderConfirmMessage = generateCustomerOrderMessage();
-        PaymentStatusMessage paymentConfirmMessage = genereatePaymentConfirmMessage(1);
+        PaymentStatusMessage paymentConfirmMessage = generatePaymentConfirmMessage(1, null);
 
         orderDao.insertCustomerOrderMessage(orderConfirmMessage);
         final TestKit deliveryService = new TestKit(system); // delivery service
         final TestKit restaurantService = new TestKit(system); // restaurant service
         final TestKit userService = new TestKit(system); // user service
-        final Props props = Props.create(OrderService.class, deliveryService.testActor(), restaurantService.testActor(), userService.testActor(), orderDao);
+        final Props props = Props.create(OrderService.class, deliveryService.testActor(), restaurantService.testActor(),
+                userService.testActor(), orderDao);
         final ActorRef orderService = system.actorOf(props); // orderService
         final TestKit paymentService = new TestKit(system); // payment service
 
@@ -72,8 +75,8 @@ public class OrderServiceTest {
         restaurantService.expectMsgClass(FiniteDuration.apply(10, TimeUnit.SECONDS), RestaurantOrderMessage.class);
     }
 
-    private PaymentStatusMessage genereatePaymentConfirmMessage(int orderId) {
-        return new PaymentStatusMessage(orderId, "CARD-PAID", "Payment processed successfully.");
+    private PaymentStatusMessage generatePaymentConfirmMessage(int orderId, ActorRef userRef) {
+        return new PaymentStatusMessage(orderId, "CARD-PAID", "Payment processed successfully.", userRef);
     }
 
     private CustomerOrderMessage generateCustomerOrderMessage() {
@@ -93,7 +96,7 @@ public class OrderServiceTest {
         // Create order details for restaurant 2
         Order.OrderDetail[] detailsForRestaurant2 = {
                 new Order.OrderDetail(503, 15.00, 3), // 3 units of food item 503
-                new Order.OrderDetail(504, 7.25, 2)  // 2 units of food item 504
+                new Order.OrderDetail(504, 7.25, 2) // 2 units of food item 504
         };
 
         // Create orders for each restaurant
@@ -101,7 +104,7 @@ public class OrderServiceTest {
         Order order2 = new Order(restaurant2, Arrays.asList(detailsForRestaurant2));
 
         // Array of orders
-        Order[] orders = {order1, order2};
+        Order[] orders = { order1, order2 };
 
         // Create the CustomerOrderMessage
         return new CustomerOrderMessage(customer, Arrays.asList(orders));

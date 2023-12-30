@@ -37,7 +37,8 @@ public class PaymentServiceTest {
         double testTotalPrice = 100.0;
         String testPaymentMethod = "Cash";
 
-        OrderPaymentMessage testOrderPaymentMessage = new OrderPaymentMessage(testOrderId, customerID, testTotalPrice, testPaymentMethod);
+        OrderPaymentMessage testOrderPaymentMessage = new OrderPaymentMessage(testOrderId, customerID, testTotalPrice,
+                testPaymentMethod, paymentService);
 
         paymentService.tell(testOrderPaymentMessage, probe.getRef());
 
