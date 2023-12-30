@@ -2,6 +2,8 @@ package service;
 
 import java.util.Scanner;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import ie.foodie.actors.FoodieActor;
 import org.bson.Document;
 import org.bson.conversions.Bson;
@@ -19,14 +21,16 @@ import akka.actor.ActorRef;
 import akka.actor.ActorSelection;
 import akka.actor.ActorSystem;
 import ie.foodie.messages.*;
+import service.SSE.SSEController;
 
 public class PaymentService extends FoodieActor {
     
     private ActorSelection orderServiceActor;
     private ActorSelection userActor;
+    private SSEController sseController;
 
-    public PaymentService() {
-        // Empty constructor
+    public PaymentService(SSEController sseController) {
+        this.sseController = sseController;
     }
 
     @Override
@@ -43,12 +47,18 @@ public class PaymentService extends FoodieActor {
                 .build();
     }
 
-    private void processPayment(OrderPaymentMessage message) {
+    private void processPayment(OrderPaymentMessage message) throws JsonProcessingException {
 
         int orderId = message.getOrderId();
         double totalPrice = message.getTotalPrice();
         String paymentMethod = message.getPaymentMethod();
         ActorRef sender = getSender(); // Storing the reference to the sender (UserActor)
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String jsonMessage = objectMapper.writeValueAsString("Processing payment for Order ID: " + orderId +
+                ", Total Price: " + totalPrice +
+                ", Payment Method: " + paymentMethod);
+        sseController.sendMessageToClients(jsonMessage);
 
         System.out.println("Processing payment for Order ID: " + orderId + 
                            ", Total Price: " + totalPrice + 
@@ -60,6 +70,7 @@ public class PaymentService extends FoodieActor {
             if (isPaymentSuccessful) {
                 // Send success message to OrderService
                 PaymentStatusMessage statusMessage = new PaymentStatusMessage(message.getOrderId(), "CARD-PAID", "Payment processed successfully.");
+
                 
                 if (orderServiceActor != null) {
                     orderServiceActor.tell(statusMessage, getSelf());

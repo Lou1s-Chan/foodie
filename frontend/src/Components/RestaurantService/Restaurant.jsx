@@ -1,13 +1,16 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 
-const Restaurant = () => {
+const Restaurant = ({ onStatusChange }) => {
   const [orderMessages, setOrderMessages] = useState([]);
 
   useEffect(() => {
     let eventSource;
     const connectToSSE = () => {
       eventSource = new EventSource("http://localhost:8080/restaurant_stream");
+      eventSource.onopen = () => {
+        onStatusChange("connected");
+      };
       eventSource.onmessage = (event) => {
         const data = JSON.parse(event.data);
         console.log("Received message:", data);
@@ -15,6 +18,7 @@ const Restaurant = () => {
       };
 
       eventSource.onerror = (error) => {
+        onStatusChange("disconnected");
         console.error("EventSource failed:", error);
         eventSource.close();
         setTimeout(connectToSSE, 5000); // Try to reconnect after 5 seconds
@@ -53,7 +57,9 @@ const Tooltip = styled.div`
   padding: 5px 0;
   position: absolute;
   z-index: 1;
-  bottom: 125%;
+
+  /* Reposition the tooltip below the EventCard */
+  top: 100%; // Changed from bottom: 125%
   left: 50%;
   margin-left: -140px;
 
@@ -61,12 +67,12 @@ const Tooltip = styled.div`
   &::after {
     content: "";
     position: absolute;
-    top: 100%;
+    bottom: 100%; // Changed from top: 100%
     left: 50%;
     margin-left: -5px;
     border-width: 5px;
     border-style: solid;
-    border-color: black transparent transparent transparent;
+    border-color: transparent transparent black transparent; // Reversed the arrow direction
   }
 `;
 
@@ -88,7 +94,6 @@ const EventsContainer = styled.div`
   overflow-y: auto;
   border: none;
   padding: 10px;
-  padding-top: 180px;
   margin: 10px 0;
 `;
 

@@ -2,12 +2,14 @@ package ie.foodie.services;
 
 import akka.actor.ActorRef;
 import akka.actor.ActorSelection;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import ie.foodie.actors.ActorProvider;
 import ie.foodie.actors.FoodieActor;
 import ie.foodie.database.OrderMongodbDao;
 import ie.foodie.messages.*;
 import ie.foodie.messages.models.Order;
 import ie.foodie.printer.MessagePrinter;
+import ie.foodie.SSE.SSEController;
 
 public class OrderService extends FoodieActor {
     private final OrderMongodbDao orderDao;
@@ -17,7 +19,10 @@ public class OrderService extends FoodieActor {
 
     private ActorRef userActor = null;
 
-    public OrderService() {
+    private SSEController sseController;
+
+    public OrderService(SSEController sseController) {
+        this.sseController = sseController;
         deliveryActor =
                 ActorProvider.getDeliveryActor(getContext().getSystem());
         restaurantActor =
@@ -48,16 +53,23 @@ public class OrderService extends FoodieActor {
                     MessagePrinter.printCustomerOrderMessage(returnValue);
 
                     getSender().tell(orderConfirmMessage, getSelf());
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    String jsonMessage = objectMapper.writeValueAsString("Received order, customer ID: " + msg.getCustomer().getCustomerId()
+                            + " order ID: " + orderConfirmMessage.getOrderId());
+                    sseController.sendMessageToClients(jsonMessage);
                 })
                 // .match(PaymentConfirmMessage.class, msg -> {
                 .match(PaymentStatusMessage.class, msg -> {
                     System.out.println("******** Received payment message: ");
                     MessagePrinter.printPaymentConfirmMessage(msg);
+                    ObjectMapper objectMapper = new ObjectMapper();
                     // change status in db
                     boolean updatePaymentStatus = orderDao.updatePaymentStatus(msg);
                     if (!updatePaymentStatus) {
                         System.out.println("Update payment status for orderID " + msg.getOrderId() +
                                 " is not successful.");
+                        String jsonMessage = objectMapper.writeValueAsString("Payment NOT successful for order ID: " + msg.getOrderId());
+                        sseController.sendMessageToClients(jsonMessage);
                     }
 
                     CustomerOrderMessage customerOrderMessage =
@@ -81,6 +93,9 @@ public class OrderService extends FoodieActor {
                         deliveryActor.tell(orderDeliveryMessage, getSelf());
                         MessagePrinter.printOrderDeliveryMessage(orderDeliveryMessage);
                     }
+
+                    String jsonMessage = objectMapper.writeValueAsString("Payment successful for order ID: " + msg.getOrderId());
+                    sseController.sendMessageToClients(jsonMessage);
                 })
                 .match(DeliveryQueryMessage.class, msg -> {
                     userActor.tell(msg, getSelf());

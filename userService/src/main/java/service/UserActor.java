@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import ie.foodie.actors.FoodieActor;
 import ie.foodie.messages.*;
 import org.bson.Document;
@@ -16,6 +17,9 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Updates;
 
+
+import akka.actor.AbstractActor;
+import akka.actor.ActorRef;
 import akka.actor.ActorSelection;
 import akka.actor.ActorSystem;
 import akka.japi.pf.ReceiveBuilder;
@@ -24,6 +28,8 @@ import ie.foodie.messages.models.Customer;
 import ie.foodie.messages.models.Order;
 import ie.foodie.messages.models.Order.OrderDetail;
 import ie.foodie.messages.models.Order.Restaurant;
+import service.SSE.SSEController;
+
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
@@ -42,9 +48,11 @@ public class UserActor extends FoodieActor {
     private Scanner scanner = new Scanner(System.in);
 
     private ActorSelection paymentServiceActor;
+    private SSEController sseController;
 
-    public UserActor(ActorSystem system) {
+    public UserActor(ActorSystem system, SSEController sseController) {
         this.paymentServiceActor = system.actorSelection("akka.tcp://payment-system@localhost:2555/user/payment-service");
+        this.sseController = sseController;
     }
 
     private static MongoClient mongoClient;
@@ -60,15 +68,34 @@ public class UserActor extends FoodieActor {
                         this.customerId = msg.getCustomerId();
                         customerAddress = msg.getCustomerAddress();
                         customerPhone = msg.getCustomerPhone();
+
+                        // SSE
+                        ObjectMapper objectMapper = new ObjectMapper();
+                        String jsonMessage = objectMapper.writeValueAsString("Customer has logged in, ID: " + msg.getCustomerId()
+                                + ", Address: " + msg.getCustomerAddress() + ", Phone: " + msg.getCustomerPhone() + ", Restaurants list requested.");
+                        sseController.sendMessageToClients(jsonMessage);
                     })
-            .match(OrderConfirmMessage.class, this::requestPayment)                    
+            .match(OrderConfirmMessage.class,
+                    this::requestPayment
+            )
             .match(PaymentStatusMessage.class, msg -> {
                 System.out.println("Payment Status for Order ID " + msg.getOrderId() + ": " 
                                     + msg.getStatus() + " - " + msg.getMessage());
+                // Additional logic based on the payment status
+                // SSE
+                ObjectMapper objectMapper = new ObjectMapper();
+                String jsonMessage = objectMapper.writeValueAsString("Payment Status for Order ID " + msg.getOrderId() + ": "
+                        + msg.getStatus() + " - " + msg.getMessage());
+                sseController.sendMessageToClients(jsonMessage);
             })
             .match(RestaurantsResponse.class,
                     msg -> {
                         System.out.println("Received back Restaurant Response...");
+                        // SSE
+                        ObjectMapper objectMapper = new ObjectMapper();
+                        String jsonMessage = objectMapper.writeValueAsString("Received back Restaurant Response...");
+                        sseController.sendMessageToClients(jsonMessage);
+
                         List<RestaurantData> restaurantList = msg.getRestaurants();
                         for (RestaurantData restaurant : restaurantList) {
                             System.out.println(restaurant.toString());
@@ -105,6 +132,11 @@ public class UserActor extends FoodieActor {
             .match(MenuItemsResponse.class,
                     msg -> {
                         System.out.println("Received back menu Response...");
+                        // SSE
+                        ObjectMapper objectMapper = new ObjectMapper();
+                        String jsonMessage = objectMapper.writeValueAsString("Received back menu Response...");
+                        sseController.sendMessageToClients(jsonMessage);
+
                         ArrayList<MenuItemsResponse.MenuItemData> menuList = msg.getMenuItems();
                         for (MenuItemsResponse.MenuItemData food : menuList) {
                             System.out.println(food.toString());
@@ -155,16 +187,33 @@ public class UserActor extends FoodieActor {
                                 new Customer(customerId, customerAddress, customerPhone), order), getSelf());
                     })
                 .match(DeliveryQueryMessage.class, msg -> {
+                    ObjectMapper objectMapper = new ObjectMapper();
                     switch (msg.getStatus()) {
                         case "Pending":
+                            // SSE
+                            String jsonMessage = objectMapper.writeValueAsString("We are finding suitable driver for order: " + msg.getOrderId());
+                            sseController.sendMessageToClients(jsonMessage);
+
                             System.out.println("We are finding suitable driver for order: " + msg.getOrderId() + ".\n");
                             break;
                         case "NoDriver":
+                            // SSE
+                            String jsonMessage2 = objectMapper.writeValueAsString("There no suitable driver for order: " + msg.getOrderId());
+                            sseController.sendMessageToClients(jsonMessage2);
+
                             System.out.println("There no suitable driver for order: " + msg.getOrderId() + ".\n"
                                     + "But we will try our best to allocate one.");
                             break;
                         case "Dispatched":
+                            // SSE
+                            String jsonMessage3 = objectMapper.writeValueAsString("Dispatched order ID:" + msg.getOrderId());
+                            sseController.sendMessageToClients(jsonMessage3);
+
                         case "Delivered":
+                            // SSE
+                            String jsonMessage4 = objectMapper.writeValueAsString("Delivered order ID: " + msg.getOrderId());
+                            sseController.sendMessageToClients(jsonMessage4);
+
                             System.out.println(msg.getMessage());
                             break;
                     }
@@ -175,26 +224,26 @@ public class UserActor extends FoodieActor {
     private void requestPayment(OrderConfirmMessage msg){
         double amountToPay = msg.getTotalPrice();
         int orderId = msg.getOrderId();
-    
+
         System.out.print("Enter payment method (Card/Cash): ");
         String paymentMethod = scanner.nextLine().trim();
-    
+
         if (!paymentMethod.equalsIgnoreCase("Card") && !paymentMethod.equalsIgnoreCase("Cash")) {
             System.out.println("Invalid input. Defaulting to Card.");
             paymentMethod = "Card";
         }
-    
+
         if (paymentMethod.equalsIgnoreCase("Card")) {
             String encryptedCardNumber = getEncryptedCardNumber(this.customerId);
             String cardNumber = null;
-    
+
             if (encryptedCardNumber != null) {
                 try {
                     String decryptedCardNumber = decryptCardNumber(encryptedCardNumber);
                     System.out.println("Your saved card number is: " + maskedCardNumber(decryptedCardNumber));
                     System.out.print("Do you want to use this card? (yes/no): ");
                     String response = scanner.nextLine().trim();
-    
+
                     if (response.equalsIgnoreCase("yes")) {
                         cardNumber = decryptedCardNumber;
                     } else {
@@ -212,7 +261,7 @@ public class UserActor extends FoodieActor {
                 encryptedCardNumber = encryptCardNumber(cardNumber); // Encrypt the new card number
                 updateUserCardNumberInDatabase(this.customerId, encryptedCardNumber); // Update the database
             }
-    
+
             if (cardNumber != null) {
                 OrderPaymentMessage paymentMessage = new OrderPaymentMessage(orderId, this.customerId, amountToPay, paymentMethod);
                 paymentServiceActor.tell(paymentMessage, getSelf());
@@ -224,24 +273,24 @@ public class UserActor extends FoodieActor {
             paymentServiceActor.tell(paymentMessage, getSelf());
         }
     }
-        
-    
+
+
     private String getCardNumberFromUser() {
         System.out.print("Please enter your card number: ");
         return scanner.nextLine().trim();
     }
-    
+
 
     private String getEncryptedCardNumber(int customerId) {
         String customerIdStr = String.format("%03d", customerId); // Assuming customerId is formatted as a string with leading zeros
-    
+
         mongoClient = MongoClients.create(dbURL);
         database = mongoClient.getDatabase("foodie");
         collection = database.getCollection("users");
-    
+
         Bson filter = Filters.eq("ID", customerIdStr);
         Document userDocument = collection.find(filter).first();
-    
+
         if (userDocument != null) {
             // Directly check if the retrieved card number is null
             String cardNumber = userDocument.getString("cardNumber");
@@ -250,7 +299,7 @@ public class UserActor extends FoodieActor {
             }
         }
         return null; // Return null if the document is not found or cardNumber is null
-    }    
+    }
 
     private static final String AES = "AES";
     private static final byte[] key = new byte[] { 'T', 'h', 'e', 'B', 'e', 's', 't', 'S', 'e', 'c', 'r', 'e', 't', 'K', 'e', 'y' };
@@ -275,7 +324,7 @@ public class UserActor extends FoodieActor {
                 System.out.println("Invalid Base64 encoding");
                 return null;
             }
-    
+
             Key aesKey = new SecretKeySpec(key, AES);
             Cipher cipher = Cipher.getInstance(AES);
             cipher.init(Cipher.DECRYPT_MODE, aesKey);
@@ -288,7 +337,7 @@ public class UserActor extends FoodieActor {
             return null;
         }
     }
-    
+
 
     private String maskedCardNumber(String cardNumber) {
         // Return a masked version of the card number, like "**** **** **** 1234"
@@ -297,7 +346,7 @@ public class UserActor extends FoodieActor {
 
     private void updateUserCardNumberInDatabase(int customerId, String encryptedCardNumber) {
         String customerIdStr = String.format("%03d", customerId);  // Convert to a string like "001"
-    
+
         Bson filter = Filters.eq("ID", customerIdStr);
         Bson updateOperation = Updates.set("cardNumber", encryptedCardNumber);
         collection.updateOne(filter, updateOperation);

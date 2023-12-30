@@ -6,16 +6,24 @@ import akka.actor.ActorSystem;
 import akka.actor.Props;
 import ie.foodie.services.DeliveryService;
 import ie.foodie.services.DriverService;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ApplicationContext;
+import ie.foodie.services.SSE.SSEController;
 
+@SpringBootApplication
 public class Main {
     public static void main(String[] args) {
+        ApplicationContext applicationContext = SpringApplication.run(Main.class, args);
+        SSEController sseController = applicationContext.getBean(SSEController.class);
+
         ActorSystem system = ActorSystem.create("delivery-system");
 
-        final Props DeliveryServiceProp = Props.create(DeliveryService.class);
+        final Props DeliveryServiceProp = Props.create(DeliveryService.class, () -> new DeliveryService(sseController));
         final ActorRef deliveryActorRef
                 = system.actorOf(DeliveryServiceProp, "delivery-service");
 
-        final Props DriverServiceProp = Props.create(DriverService.class);
+        final Props DriverServiceProp = Props.create(DriverService.class, () -> new DriverService(sseController));
         final ActorRef driverActorRef
                 =system.actorOf(DriverServiceProp, "driver-service");
 
