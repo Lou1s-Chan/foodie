@@ -16,8 +16,9 @@ public class OrderService extends FoodieActor {
 
     private final ActorSelection deliveryActor;
     private final ActorSelection restaurantActor;
+    private final ActorSelection paymentActor;
 
-    private ActorRef userActor = null;
+    //private ActorRef userActor = null;
 
     private SSEController sseController;
 
@@ -27,22 +28,29 @@ public class OrderService extends FoodieActor {
                 ActorProvider.getDeliveryActor(getContext().getSystem());
         restaurantActor =
                 ActorProvider.getRestaurantActor(getContext().getSystem());
+        paymentActor =
+                ActorProvider.getPaymentActor(getContext().getSystem());
         orderDao = new OrderMongodbDao("mongodb+srv://foodie:ccOUvdosBLzDprGM@foodie.cli5iha.mongodb.net/?retryWrites=true&w=majority");
     }
 
     //for test
-    public OrderService(ActorSelection deliveryActor, ActorSelection restaurantActor,
+    public OrderService(ActorSelection deliveryActor, ActorSelection restaurantActor,ActorSelection paymentActor,
                         OrderMongodbDao orderDao) {
         this.deliveryActor = deliveryActor;
         this.restaurantActor = restaurantActor;
+        this.paymentActor = paymentActor;
         this.orderDao = orderDao;
     }
 
     @Override
     public Receive createReceive() {
         return receiveBuilder()
+                .match(RestaurantsResponse.class, msg -> msg.getUserRef().tell(msg, getSender()))
+                .match(MenuItemsResponse.class, msg -> msg.getUserRef().tell(msg, getSender()))
+                .match(RestaurantQueryMessage.class, msg -> restaurantActor.tell(msg, getSelf()))
+                .match(OrderPaymentMessage.class, msg -> paymentActor.tell(msg, getSelf()))
                 .match(CustomerOrderMessage.class, msg -> {
-                    this.userActor = getSender();
+                    //this.userActor = getSender();
                     System.out.println("******** Received order message: " + msg.getCustomer().getCustomerId());
                     // calculate price and store to db
                     OrderConfirmMessage orderConfirmMessage =
@@ -60,6 +68,7 @@ public class OrderService extends FoodieActor {
                 })
                 // .match(PaymentConfirmMessage.class, msg -> {
                 .match(PaymentStatusMessage.class, msg -> {
+                    msg.getUserRef().tell(msg, getSender());
                     System.out.println("******** Received payment message: ");
                     MessagePrinter.printPaymentConfirmMessage(msg);
                     ObjectMapper objectMapper = new ObjectMapper();
@@ -81,7 +90,7 @@ public class OrderService extends FoodieActor {
                         System.out.println("******** Sending restaurant message: ");
                         RestaurantOrderMessage restaurantOrderMessage = new
                                 RestaurantOrderMessage(customerOrderMessage.getCustomer().getCustomerId(),
-                                order, msg.getOrderId());
+                                order, msg.getOrderId(), msg.getUserRef());
                         MessagePrinter.printRestaurantOrderMessage(restaurantOrderMessage);
                         restaurantActor.tell(restaurantOrderMessage, getSelf());
                         // print out delivery message sent
@@ -89,7 +98,7 @@ public class OrderService extends FoodieActor {
                         System.out.println("******** Sending delivery message: ");
                         OrderDeliveryMessage orderDeliveryMessage = new
                                 OrderDeliveryMessage(msg.getOrderId(), order,
-                                customerOrderMessage.getCustomer());
+                                customerOrderMessage.getCustomer(), msg.getUserRef());
                         deliveryActor.tell(orderDeliveryMessage, getSelf());
                         MessagePrinter.printOrderDeliveryMessage(orderDeliveryMessage);
                     }
@@ -98,7 +107,7 @@ public class OrderService extends FoodieActor {
                     sseController.sendMessageToClients(jsonMessage);
                 })
                 .match(DeliveryQueryMessage.class, msg -> {
-                    userActor.tell(msg, getSelf());
+                    msg.getUserRef().tell(msg, getSelf());
                 })
                 .build();
     }

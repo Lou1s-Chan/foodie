@@ -1,20 +1,32 @@
 package ie.foodie.messages;
 
+import akka.actor.ActorRef;
+
 import java.util.ArrayList;
 
 public class RestaurantsResponse implements MessageSerializable {
     private final ArrayList<RestaurantData> restaurants;
+    private ActorRef userRef;
 
     public RestaurantsResponse() {
         this.restaurants = new ArrayList<RestaurantData>();
     }
 
-    public RestaurantsResponse(ArrayList<RestaurantData> restaurants) {
+    public RestaurantsResponse(ArrayList<RestaurantData> restaurants, ActorRef userRef) {
         this.restaurants = restaurants;
+        this.userRef = userRef;
     }
 
     public ArrayList<RestaurantData> getRestaurants() {
         return restaurants;
+    }
+
+    public ActorRef getUserRef() {
+        return userRef;
+    }
+
+    public void setUserRef(ActorRef userRef) {
+        this.userRef = userRef;
     }
 
     @Override

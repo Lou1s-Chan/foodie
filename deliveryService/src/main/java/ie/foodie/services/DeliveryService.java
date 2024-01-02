@@ -53,7 +53,7 @@ public class DeliveryService extends FoodieActor {
                 getContext().system().scheduler().scheduleOnce(
                         Duration.create(60, TimeUnit.SECONDS),
                         getSender(),
-                        new DriverService.InternalMsgSlaveDriver(message.getOrderId()),
+                        new DriverService.InternalMsgSlaveDriver(message.getOrderId(), message.getUserRef()),
                         getContext().dispatcher(),
                         getSelf()
                 );
@@ -62,7 +62,7 @@ public class DeliveryService extends FoodieActor {
 
             case "Delivered" :
                 DriverService.InternalMsgFreeDriver msgFreeDriver = new DriverService.InternalMsgFreeDriver(
-                        message.getOrderId(), Integer.parseInt(message.getMessage()));
+                        message.getOrderId(), Integer.parseInt(message.getMessage()), message.getUserRef());
                 driverServiceActor.tell(msgFreeDriver, getSelf());
 
                 DeliveryQueryMessage deliveryQueryMessage = new DeliveryQueryMessage(
@@ -70,7 +70,7 @@ public class DeliveryService extends FoodieActor {
                         "Your order " + message.getOrderId()
                                 + " is delivered at "
                                 + LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss")) + "."
-                );
+                , message.getUserRef());
                 orderServiceActor.tell(deliveryQueryMessage, getSelf());
                 System.out.println("Order: " + message.getOrderId() + " is delivered.\n");
                 break;
@@ -99,11 +99,11 @@ public class DeliveryService extends FoodieActor {
                     + "Restaurant Phone: " + restaurantPhone + "\n");
         System.out.println("We are allocating suitable driver at this time.\n");
         DriverService.InternalMsgSlaveDriver internalMsgSlaveDriver = new DriverService.InternalMsgSlaveDriver(
-                message.getOrderId());
+                message.getOrderId(), message.getUserRef());
         driverServiceActor.tell(internalMsgSlaveDriver, getSelf());
 
         DeliveryQueryMessage deliveryQueryMessage = new DeliveryQueryMessage(orderId,
-                "Pending", "Allocating suitable driver.");
+                "Pending", "Allocating suitable driver.", message.getUserRef());
         orderServiceActor.tell(deliveryQueryMessage, getSelf());
     }
 }

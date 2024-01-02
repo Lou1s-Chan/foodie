@@ -111,7 +111,7 @@ public class UserActor extends FoodieActor {
                                     getSender().tell(
                                             new RestaurantQueryMessage(
                                                     RestaurantQueryMessage.QueryType.MENU_REQUEST,
-                                                    selectedRestaurantId),
+                                                    selectedRestaurantId, getSelf()),
                                             getSelf());
                                     for (RestaurantData restaurant : restaurantList) {
                                         if (restaurant.getId() == selectedRestaurantId) {
@@ -222,6 +222,10 @@ public class UserActor extends FoodieActor {
     }
 
     private void requestPayment(OrderConfirmMessage msg){
+        ActorSystem system = getContext().getSystem();
+        ActorSelection orderSystem = system
+                .actorSelection("akka.tcp://order-system@localhost:2553/user/order-service");
+
         double amountToPay = msg.getTotalPrice();
         int orderId = msg.getOrderId();
 
@@ -263,14 +267,14 @@ public class UserActor extends FoodieActor {
             }
 
             if (cardNumber != null) {
-                OrderPaymentMessage paymentMessage = new OrderPaymentMessage(orderId, this.customerId, amountToPay, paymentMethod);
-                paymentServiceActor.tell(paymentMessage, getSelf());
+                OrderPaymentMessage paymentMessage = new OrderPaymentMessage(orderId, this.customerId, amountToPay, paymentMethod, getSelf());
+                orderSystem.tell(paymentMessage, getSelf());
             } else {
                 System.out.println("Payment process aborted due to missing card number.");
             }
         } else {
-            OrderPaymentMessage paymentMessage = new OrderPaymentMessage(orderId, this.customerId, amountToPay, paymentMethod);
-            paymentServiceActor.tell(paymentMessage, getSelf());
+            OrderPaymentMessage paymentMessage = new OrderPaymentMessage(orderId, this.customerId, amountToPay, paymentMethod, getSelf());
+            orderSystem.tell(paymentMessage, getSelf());
         }
     }
 

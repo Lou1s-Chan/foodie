@@ -26,7 +26,7 @@ import service.SSE.SSEController;
 public class PaymentService extends FoodieActor {
     
     private ActorSelection orderServiceActor;
-    private ActorSelection userActor;
+    //private ActorSelection userActor;
     private SSEController sseController;
 
     public PaymentService(SSEController sseController) {
@@ -37,7 +37,7 @@ public class PaymentService extends FoodieActor {
     public void preStart() {
         ActorSystem system = getContext().getSystem();
         this.orderServiceActor = ActorProvider.getOrderServiceActor(system);
-        this.userActor = ActorProvider.getUserActor(system);
+//        this.userActor = ActorProvider.getUserActor(system);
     }
 
     @Override
@@ -52,7 +52,7 @@ public class PaymentService extends FoodieActor {
         int orderId = message.getOrderId();
         double totalPrice = message.getTotalPrice();
         String paymentMethod = message.getPaymentMethod();
-        ActorRef sender = getSender(); // Storing the reference to the sender (UserActor)
+//        ActorRef sender = getSender(); // Storing the reference to the sender (UserActor)
 
         ObjectMapper objectMapper = new ObjectMapper();
         String jsonMessage = objectMapper.writeValueAsString("Processing payment for Order ID: " + orderId +
@@ -60,7 +60,7 @@ public class PaymentService extends FoodieActor {
                 ", Payment Method: " + paymentMethod);
         sseController.sendMessageToClients(jsonMessage);
 
-        System.out.println("Processing payment for Order ID: " + orderId + 
+        System.out.println("Processing payment for Order ID: " + orderId +
                            ", Total Price: " + totalPrice + 
                            ", Payment Method: " + paymentMethod);
 
@@ -69,34 +69,33 @@ public class PaymentService extends FoodieActor {
         
             if (isPaymentSuccessful) {
                 // Send success message to OrderService
-                PaymentStatusMessage statusMessage = new PaymentStatusMessage(message.getOrderId(), "CARD-PAID", "Payment processed successfully.");
-
+                PaymentStatusMessage statusMessage = new PaymentStatusMessage(message.getOrderId(), "CARD-PAID", "Payment processed successfully.", message.getUserRef());
                 
-                if (orderServiceActor != null) {
-                    orderServiceActor.tell(statusMessage, getSelf());
+                if (getSender() != null) {
+                    getSender().tell(statusMessage, getSelf());
                     System.out.println("Confirmation sent to Order Service.");
                 } else {                
                     System.out.println("Could not find Order Service.");
                 }
         
                 // Send success message to UserActor
-                sender.tell(statusMessage, getSelf());
+                //sender.tell(statusMessage, getSelf());
                 // System.out.println(statusMessage);
             } else {
 
                 // Handle payment failure scenario
-                PaymentStatusMessage statusMessage = new PaymentStatusMessage(message.getOrderId(), "CARD-UNPAID", "Payment processing failed.");
-                sender.tell(statusMessage, getSelf());
+                PaymentStatusMessage statusMessage = new PaymentStatusMessage(message.getOrderId(), "CARD-UNPAID", "Payment processing failed.", message.getUserRef());
+                getSender().tell(statusMessage, getSelf());
             }
         } else {
-            PaymentStatusMessage statusMessage = new PaymentStatusMessage(message.getOrderId(), "CASH-UNPAID", "Driver will collect cash.");
-            if (orderServiceActor != null) {
-                orderServiceActor.tell(statusMessage, getSelf());
+            PaymentStatusMessage statusMessage = new PaymentStatusMessage(message.getOrderId(), "CASH-UNPAID", "Driver will collect cash.", message.getUserRef());
+            if (getSender() != null) {
+                getSender().tell(statusMessage, getSelf());
                 System.out.println("Confirmation sent to Order Service.");
             } else {                
                 System.out.println("Could not find Order Service.");
             }
-            sender.tell(statusMessage, getSelf());
+//            sender.tell(statusMessage, getSelf());
         }
     }
 

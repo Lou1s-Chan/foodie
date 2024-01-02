@@ -52,16 +52,19 @@ public class DeliveryServiceTest {
         FakeOrder fakeOrder3 = new FakeOrder();
         FakeCustomer fakeCustomer3 = new FakeCustomer();
 
-        OrderDeliveryMessage testDeliveryMessage1 = new OrderDeliveryMessage(testOrderId1, fakeOrder1, fakeCustomer1);
+        OrderDeliveryMessage testDeliveryMessage1 = new OrderDeliveryMessage(testOrderId1, fakeOrder1, fakeCustomer1,
+                deliveryService);
         deliveryService.tell(testDeliveryMessage1, probe.getRef());
 
-        OrderDeliveryMessage testDeliveryMessage2 = new OrderDeliveryMessage(testOrderId2, fakeOrder2, fakeCustomer2);
+        OrderDeliveryMessage testDeliveryMessage2 = new OrderDeliveryMessage(testOrderId2, fakeOrder2, fakeCustomer2,
+                deliveryService);
         deliveryService.tell(testDeliveryMessage2, probe.getRef());
 
-        OrderDeliveryMessage testDeliveryMessage3 = new OrderDeliveryMessage(testOrderId3, fakeOrder3, fakeCustomer3);
+        OrderDeliveryMessage testDeliveryMessage3 = new OrderDeliveryMessage(testOrderId3, fakeOrder3, fakeCustomer3,
+                deliveryService);
         deliveryService.tell(testDeliveryMessage3, probe.getRef());
 
-        List<Object> deadLetters = probe.receiveN(10, Duration.ofSeconds(300));
+        List<Object> deadLetters = probe.receiveN(9, Duration.ofSeconds(300));
         for (Object deadLetterObject : deadLetters) {
             DeadLetter deadLetter = (DeadLetter) deadLetterObject;
             if (deadLetter.message() instanceof DeliveryQueryMessage) {
@@ -73,7 +76,8 @@ public class DeliveryServiceTest {
                 } else if (Objects.equals(message.getStatus(), "Delivered")) {
                     System.out.println("Test log: Task of Order " + message.getOrderId() + " Delivered.");
                 } else if (Objects.equals(message.getStatus(), "NoDriver")) {
-                    System.out.println("Test log: Task of Order " + message.getOrderId() + " No Driver Assigned Currently.");
+                    System.out.println(
+                            "Test log: Task of Order " + message.getOrderId() + " No Driver Assigned Currently.");
                 }
             }
         }

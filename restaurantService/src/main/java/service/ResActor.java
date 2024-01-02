@@ -199,22 +199,21 @@ public class ResActor extends FoodieActor {
                     sseController.sendMessageToClients(jsonMessage);
                 })
                 .match(RestaurantQueryMessage.class, msg -> {
-                    ActorRef sender = getSender();
-                    System.out.println("Request received from customer service." + sender);
+                    System.out.println("Request received from customer service." + msg.getUserRef());
                     if (msg.getQueryType() == RestaurantQueryMessage.QueryType.RESTAURANT_LIST) {
                         System.out.println("Restaurants list is requested.");
                         ArrayList<RestaurantData> restaurantList = fetchRestaurants();
-                        sender.tell(new RestaurantsResponse(restaurantList), getSelf());
+                        getSender().tell(new RestaurantsResponse(restaurantList, msg.getUserRef()), getSelf());
 
                         ObjectMapper objectMapper = new ObjectMapper();
                         String jsonMessage = objectMapper.writeValueAsString("Restaurant list sent to user.");
                         sseController.sendMessageToClients(jsonMessage);
-                        System.out.println("Restaurant List send back to user service " + sender);
+                        System.out.println("Restaurant List send back to user service " + msg.getUserRef());
                     } else if (msg.getQueryType() == RestaurantQueryMessage.QueryType.MENU_REQUEST) {
                         System.out.println("Menu list is request for restaurant id: " + msg.getRestaurantID());
                         int restaurantId = msg.getRestaurantID();
                         ArrayList<MenuItemsResponse.MenuItemData> menuItemsList = fetchMenuItems(restaurantId);
-                        getSender().tell(new MenuItemsResponse(menuItemsList), getSelf());
+                        getSender().tell(new MenuItemsResponse(menuItemsList, msg.getUserRef()), getSelf());
                         ObjectMapper objectMapper = new ObjectMapper();
                         String jsonMessage = objectMapper.writeValueAsString("Restaurant ID: " + restaurantId + " menu sent back to user");
                         sseController.sendMessageToClients(jsonMessage);
