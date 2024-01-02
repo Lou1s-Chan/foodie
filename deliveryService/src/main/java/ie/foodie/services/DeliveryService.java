@@ -1,21 +1,26 @@
 package ie.foodie.services;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import ie.foodie.actors.FoodieActor;
 import scala.concurrent.duration.Duration;
 import akka.actor.*;
 import ie.foodie.actors.DriverActorProvider;
 import ie.foodie.messages.*;
+import ie.foodie.services.SSE.SSEController;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.concurrent.TimeUnit;
 
 public class DeliveryService extends FoodieActor {
-
+    private SSEController sseController;
     private ActorSelection driverServiceActor;
     private ActorRef orderServiceActor = null;
 
-    public DeliveryService() {}
+    public DeliveryService(SSEController sseController) {
+        this.sseController = sseController;
+    }
 
     @Override
     public void preStart() {
@@ -31,7 +36,12 @@ public class DeliveryService extends FoodieActor {
                 .build();
     }
 
-    private void msgForwarder(DeliveryQueryMessage message) {
+    private void msgForwarder(DeliveryQueryMessage message) throws JsonProcessingException {
+        // SSE
+        ObjectMapper objectMapper = new ObjectMapper();
+        String jsonMessage = objectMapper.writeValueAsString("Delivery query has been received for order ID: " + message.getOrderId());
+        sseController.sendMessageToClients(jsonMessage);
+
         switch (message.getStatus()) {
             case "Dispatched" :
                 orderServiceActor.tell(message, getSelf());
@@ -68,14 +78,18 @@ public class DeliveryService extends FoodieActor {
 
     }
 
-    private void processDelivery(OrderDeliveryMessage message) {
+    private void processDelivery(OrderDeliveryMessage message) throws JsonProcessingException {
         this.orderServiceActor = getSender();
-
         int orderId = message.getOrderId();
         String customerAddress = message.getCustomer().getCustomerAddress();
         String customerPhone = message.getCustomer().getCustomerPhone();
         String restaurantAddress = message.getOrder().getRestaurant().getRestaurantAddress();
         String restaurantPhone = message.getOrder().getRestaurant().getRestaurantPhone();
+
+        // SSE
+        ObjectMapper objectMapper = new ObjectMapper();
+        String jsonMessage = objectMapper.writeValueAsString("Delivery requested for order ID: " + orderId );
+        sseController.sendMessageToClients(jsonMessage);
 
         System.out.println("NEW DELIVER TASK CREATED" + "\n"
                     + "Order ID: " + orderId + "\n"

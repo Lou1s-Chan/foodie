@@ -43,7 +43,7 @@ public class RestTests implements MessageSerializable {
                                 1, new Order(
                                                 new Order.Restaurant(
                                                                 1, "555-1234", "123 Oak Street"),
-                                                Arrays.asList(orderDetails)),
+                                                Arrays.asList(orderDetails)), 123,
                                 ActorRef.noSender());
 
                 RestaurantQueryMessage testQuery = new RestaurantQueryMessage(

@@ -7,11 +7,13 @@ public class RestaurantOrderMessage implements MessageSerializable {
     private int customerId;
     private Order order;
     private ActorRef userRef;
+    private int orderid;
 
-    public RestaurantOrderMessage(int customerId, Order order, ActorRef userRef) {
+    public RestaurantOrderMessage(int customerId, Order order, int orderid, ActorRef userRef) {
         this.customerId = customerId;
         this.order = order;
         this.userRef = userRef;
+        this.orderid = orderid;
     }
     public RestaurantOrderMessage() {
     }
@@ -27,6 +29,8 @@ public class RestaurantOrderMessage implements MessageSerializable {
     public Order getOrder() {
         return order;
     }
+
+    public int getOrderID() {return this.orderid;}
 
     public void setOrder(Order order) {
         this.order = order;

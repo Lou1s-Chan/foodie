@@ -1,8 +1,5 @@
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+package service;
+
 import java.util.HashMap;
 import java.util.Scanner;
 
@@ -15,20 +12,18 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 
-import java.util.Map;
-
 import akka.actor.ActorRef;
 import akka.actor.ActorSelection;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
-import ie.foodie.messages.CustomerOrderMessage;
 import ie.foodie.messages.RestaurantQueryMessage;
 import ie.foodie.messages.models.Customer;
-import ie.foodie.messages.models.Order;
-import ie.foodie.messages.models.Order.OrderDetail;
-import ie.foodie.messages.models.Order.Restaurant;
-import service.UserActor;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ApplicationContext;
+import service.SSE.SSEController;
 
+@SpringBootApplication
 public class Main {
 
     private static MongoClient mongoClient;
@@ -39,6 +34,11 @@ public class Main {
     private static HashMap<Integer, String> userList = new HashMap<>();
 
     public static void main(String[] args) {
+
+        //
+        ApplicationContext applicationContext = SpringApplication.run(Main.class, args);
+        SSEController sseController = applicationContext.getBean(SSEController.class);
+        //
 
         // connect to MongoDB
         mongoClient = MongoClients.create(dbURL);
@@ -55,7 +55,7 @@ public class Main {
         ActorSystem system = ActorSystem.create("user-system");
         // final ActorRef ref = system.actorOf(Props.create(UserActor.class),
         // "user-service");
-        final ActorRef ref = system.actorOf(Props.create(UserActor.class, system), "user-service");
+        final ActorRef ref = system.actorOf(Props.create(UserActor.class, () -> new UserActor(system, sseController)), "user-service");
 
         boolean loginSuccess = false;
         Scanner scanner = new Scanner(System.in);

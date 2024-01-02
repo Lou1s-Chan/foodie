@@ -1,33 +1,96 @@
 import "./App.css";
 import styled from "styled-components";
 import Restaurant from "./Components/RestaurantService/Restaurant";
+import Order from "./Components/OrderService/Order";
+import User from "./Components/UserService/User";
+import Delivery from "./Components/DeliveryService/Delivery";
+import Payment from "./Components/PaymentService/Payment";
+import { useState } from "react";
 
 function App() {
+  const [paymentStatus, setPaymentStatus] = useState("disconnected");
+  const [deliveryStatus, setDeliveryStatus] = useState("disconnected");
+  const [orderStatus, setOrderStatus] = useState("disconnected");
+  const [userStatus, setUserStatus] = useState("disconnected");
+  const [restaurantStatus, setRestaurantStatus] = useState("disconnected");
+
+  const handlePaymentStatusChange = (status) => {
+    setPaymentStatus(status);
+  };
+  const handleDeliveryStatusChange = (status) => {
+    setDeliveryStatus(status);
+  };
+  const handleOrderStatusChange = (status) => {
+    setOrderStatus(status);
+  };
+  const handleUserStatusChange = (status) => {
+    setUserStatus(status);
+  };
+  const handleRestaurantStatusChange = (status) => {
+    setRestaurantStatus(status);
+  };
+
+  const paymentStatusStyle = {
+    color: paymentStatus === "connected" ? "green" : "red",
+  };
+  const userStatusStyle = {
+    color: userStatus === "connected" ? "green" : "red",
+  };
+  const restaurantStatusStyle = {
+    color: restaurantStatus === "connected" ? "green" : "red",
+  };
+  const orderStatusStyle = {
+    color: orderStatus === "connected" ? "green" : "red",
+  };
+  const deliveryStatusStyle = {
+    color: deliveryStatus === "connected" ? "green" : "red",
+  };
+
   return (
     <div className="App">
       <DashboardContainer>
         <ServiceCard>
           <h1>User-service</h1>
+          <User onStatusChange={handleUserStatusChange} />
         </ServiceCard>
 
         <ServiceCard>
           <h1>Restaurant-service</h1>
-          <Restaurant></Restaurant>
+          <Restaurant onStatusChange={handleRestaurantStatusChange} />
         </ServiceCard>
 
         <ServiceCard>
           <h1>Order-service</h1>
+          <Order onStatusChange={handleOrderStatusChange} />
         </ServiceCard>
 
         <ServiceCard>
           <h1>Payment-service</h1>
+          <Payment onStatusChange={handlePaymentStatusChange} />
         </ServiceCard>
 
         <ServiceCard>
           <h1>Delivery-service</h1>
+          <Delivery onStatusChange={handleDeliveryStatusChange} />
         </ServiceCard>
 
-        <ServiceCard></ServiceCard>
+        <ServiceCard>
+          <h1>Foodies System Status</h1>
+          <br />
+          <p style={userStatusStyle}>User Service is: {userStatus}</p>
+          <br />
+          <p style={restaurantStatusStyle}>
+            Restaurant Service is: {restaurantStatus}
+          </p>
+          <br />
+          <p style={orderStatusStyle}>Order Service is: {orderStatus}</p>
+          <br />
+          <p style={paymentStatusStyle}>Payment Service is: {paymentStatus}</p>
+          <br />
+          <p style={deliveryStatusStyle}>
+            Delivery Service is: {deliveryStatus}
+          </p>
+        </ServiceCard>
       </DashboardContainer>
     </div>
   );
