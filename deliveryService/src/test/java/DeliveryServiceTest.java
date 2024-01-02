@@ -52,13 +52,13 @@ public class DeliveryServiceTest {
         FakeOrder fakeOrder3 = new FakeOrder();
         FakeCustomer fakeCustomer3 = new FakeCustomer();
 
-        OrderDeliveryMessage testDeliveryMessage1 = new OrderDeliveryMessage(testOrderId1, fakeOrder1, fakeCustomer1);
+        OrderDeliveryMessage testDeliveryMessage1 = new OrderDeliveryMessage(testOrderId1, fakeOrder1, fakeCustomer1, ActorRef.noSender());
         deliveryService.tell(testDeliveryMessage1, probe.getRef());
 
-        OrderDeliveryMessage testDeliveryMessage2 = new OrderDeliveryMessage(testOrderId2, fakeOrder2, fakeCustomer2);
+        OrderDeliveryMessage testDeliveryMessage2 = new OrderDeliveryMessage(testOrderId2, fakeOrder2, fakeCustomer2, ActorRef.noSender());
         deliveryService.tell(testDeliveryMessage2, probe.getRef());
 
-        OrderDeliveryMessage testDeliveryMessage3 = new OrderDeliveryMessage(testOrderId3, fakeOrder3, fakeCustomer3);
+        OrderDeliveryMessage testDeliveryMessage3 = new OrderDeliveryMessage(testOrderId3, fakeOrder3, fakeCustomer3, ActorRef.noSender());
         deliveryService.tell(testDeliveryMessage3, probe.getRef());
 
         List<Object> deadLetters = probe.receiveN(10, Duration.ofSeconds(300));

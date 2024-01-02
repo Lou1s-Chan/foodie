@@ -7,18 +7,24 @@ import java.util.ArrayList;
 public class RestaurantsResponse implements MessageSerializable {
     private final ArrayList<RestaurantData> restaurants;
     private ActorRef userRef;
+    private String msgType;
 
     public RestaurantsResponse() {
         this.restaurants = new ArrayList<RestaurantData>();
     }
 
     public RestaurantsResponse(ArrayList<RestaurantData> restaurants, ActorRef userRef) {
+        this.msgType = "RestaurantsResponse";
         this.restaurants = restaurants;
         this.userRef = userRef;
     }
 
     public ArrayList<RestaurantData> getRestaurants() {
         return restaurants;
+    }
+
+    public String getMsgType() {
+        return msgType;
     }
 
     public ActorRef getUserRef() {

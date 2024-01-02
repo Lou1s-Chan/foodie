@@ -8,8 +8,10 @@ import ie.foodie.messages.models.Order;
 public class CustomerOrderMessage implements MessageSerializable {
     private Customer customer;
     private List<Order> orders;
+    private String msgType;
 
     public CustomerOrderMessage(Customer customer, List<Order> orders) {
+        this.msgType = "CustomerOrderMessage";
         this.customer = customer;
         this.orders = orders;
     }
@@ -31,5 +33,9 @@ public class CustomerOrderMessage implements MessageSerializable {
 
     public void setOrders(List<Order> orders) {
         this.orders = orders;
+    }
+
+    public String getMsgType() {
+        return msgType;
     }
 }

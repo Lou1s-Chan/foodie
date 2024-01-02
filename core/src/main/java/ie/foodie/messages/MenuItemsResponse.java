@@ -8,8 +8,10 @@ import java.util.List;
 public class MenuItemsResponse implements MessageSerializable {
     private final ArrayList<MenuItemData> menuItems;
     private ActorRef userRef;
+    private String msgType;
 
     public MenuItemsResponse(ArrayList<MenuItemData> menuItems, ActorRef userRef) {
+        this.msgType = "MenuItemsResponse";
         this.menuItems = menuItems;
         this.userRef = userRef;
     }

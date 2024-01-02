@@ -7,8 +7,10 @@ public class RestaurantOrderMessage implements MessageSerializable {
     private int customerId;
     private Order order;
     private ActorRef userRef;
+    private String msgType;
 
     public RestaurantOrderMessage(int customerId, Order order, ActorRef userRef) {
+        this.msgType = "RestaurantOrderMessage";
         this.customerId = customerId;
         this.order = order;
         this.userRef = userRef;
@@ -38,6 +40,10 @@ public class RestaurantOrderMessage implements MessageSerializable {
 
     public void setUserRef(ActorRef userRef) {
         this.userRef = userRef;
+    }
+
+    public String getMsgType() {
+        return msgType;
     }
 }
 

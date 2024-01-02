@@ -6,9 +6,11 @@ public class PaymentStatusMessage implements MessageSerializable {
     private int orderId;
     private String status;
     private String message;
+    private String msgType;
     private ActorRef userRef;
 
     public PaymentStatusMessage(int orderId, String status, String message, ActorRef userRef) {
+        this.msgType = "PaymentStatusMessage";
         this.orderId = orderId;
         this.status = status;
         this.message = message;
@@ -36,6 +38,10 @@ public class PaymentStatusMessage implements MessageSerializable {
 
     public void setUserRef(ActorRef userRef) {
         this.userRef = userRef;
+    }
+
+    public String getMsgType() {
+        return msgType;
     }
 
     @Override

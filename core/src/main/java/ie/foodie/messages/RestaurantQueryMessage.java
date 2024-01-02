@@ -8,11 +8,13 @@ public class RestaurantQueryMessage implements MessageSerializable {
         MENU_REQUEST
     }
 
+    private String msgType;
     private ActorRef userRef;
     private final QueryType queryType;
     private final Integer restaurantId; // this can be null, as id = 0 might be possible
 
     public RestaurantQueryMessage(QueryType queryType, ActorRef userRef) {
+        this.msgType = "RestaurantQueryMessage";
         this.queryType = queryType;
         this.userRef = userRef;
         this.restaurantId = null;
@@ -43,5 +45,9 @@ public class RestaurantQueryMessage implements MessageSerializable {
 
     public void setUserRef(ActorRef userRef) {
         this.userRef = userRef;
+    }
+
+    public String getMsgType() {
+        return msgType;
     }
 }

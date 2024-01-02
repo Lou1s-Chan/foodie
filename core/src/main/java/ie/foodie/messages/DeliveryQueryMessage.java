@@ -7,8 +7,10 @@ public class DeliveryQueryMessage implements MessageSerializable {
     private String status;
     private String message;
     private ActorRef userRef;
+    private String msgType;
 
     public DeliveryQueryMessage(int orderId, String status, String message, ActorRef userRef) {
+        this.msgType = "DeliveryQueryMessage";
         this.orderId = orderId;
         this.status = status;
         this.message = message;
@@ -39,6 +41,10 @@ public class DeliveryQueryMessage implements MessageSerializable {
 
     public void setUserRef(ActorRef userRef) {
         this.userRef = userRef;
+    }
+
+    public String getMsgType() {
+        return msgType;
     }
 
     @Override

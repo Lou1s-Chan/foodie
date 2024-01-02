@@ -6,11 +6,13 @@ import ie.foodie.messages.models.Order;
 
 public class OrderDeliveryMessage implements MessageSerializable {
     int orderId;
+    String msgType;
     private Order order;
     private Customer customer;
     private ActorRef userRef;
 
     public OrderDeliveryMessage(int orderId, Order order, Customer customer, ActorRef userRef) {
+        this.msgType = "OrderDeliveryMessage";
         this.orderId = orderId;
         this.order = order;
         this.customer = customer;

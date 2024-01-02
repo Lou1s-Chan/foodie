@@ -6,10 +6,12 @@ public class OrderPaymentMessage implements MessageSerializable {
     private int orderId;
     private int customerID;
     private double totalPrice;
+    private String msgType;
     private String paymentMethod;
     private ActorRef userRef;
 
     public OrderPaymentMessage(int orderId, int customerID, double totalPrice, String paymentMethod, ActorRef userRef) {
+        this.msgType = "OrderPaymentMessage";
         this.orderId = orderId;
         this.customerID = customerID;
         this.totalPrice = totalPrice;
@@ -58,5 +60,9 @@ public class OrderPaymentMessage implements MessageSerializable {
 
     public void setUserRef(ActorRef userRef) {
         this.userRef = userRef;
+    }
+
+    public String getMsgType() {
+        return msgType;
     }
 }
