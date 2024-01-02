@@ -8,11 +8,11 @@ import Payment from "./Components/PaymentService/Payment";
 import { useState } from "react";
 
 function App() {
-  const [paymentStatus, setPaymentStatus] = useState("disconnected");
-  const [deliveryStatus, setDeliveryStatus] = useState("disconnected");
-  const [orderStatus, setOrderStatus] = useState("disconnected");
-  const [userStatus, setUserStatus] = useState("disconnected");
-  const [restaurantStatus, setRestaurantStatus] = useState("disconnected");
+  const [paymentStatus, setPaymentStatus] = useState("offline");
+  const [deliveryStatus, setDeliveryStatus] = useState("offline");
+  const [orderStatus, setOrderStatus] = useState("offline");
+  const [userStatus, setUserStatus] = useState("offline");
+  const [restaurantStatus, setRestaurantStatus] = useState("offline");
 
   const handlePaymentStatusChange = (status) => {
     setPaymentStatus(status);
@@ -31,19 +31,19 @@ function App() {
   };
 
   const paymentStatusStyle = {
-    color: paymentStatus === "connected" ? "green" : "red",
+    color: paymentStatus === "online" ? "green" : "red",
   };
   const userStatusStyle = {
-    color: userStatus === "connected" ? "green" : "red",
+    color: userStatus === "online" ? "green" : "red",
   };
   const restaurantStatusStyle = {
-    color: restaurantStatus === "connected" ? "green" : "red",
+    color: restaurantStatus === "online" ? "green" : "red",
   };
   const orderStatusStyle = {
-    color: orderStatus === "connected" ? "green" : "red",
+    color: orderStatus === "online" ? "green" : "red",
   };
   const deliveryStatusStyle = {
-    color: deliveryStatus === "connected" ? "green" : "red",
+    color: deliveryStatus === "online" ? "green" : "red",
   };
 
   return (
