@@ -91,6 +91,12 @@
             <artifactId>spring-boot-starter-web</artifactId>
             <version>2.7.8</version>
         </dependency>
+        <dependency>
+            <groupId>ie.foodie</groupId>
+            <artifactId>restaurant-service</artifactId>
+            <version>2.0</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
 </project>
