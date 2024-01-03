@@ -43,7 +43,7 @@ public class UserSlave extends FoodieActor {
     private static WebSocket webSocket;
 //    private Scanner scanner = new Scanner(System.in);
     private Integer reStaurantId;
-    private Integer foodId = null;
+    private Integer foodId;
     private String continueOrder;
     private String payWithSavedCard;
     private String payMethod;
@@ -85,7 +85,7 @@ public class UserSlave extends FoodieActor {
                             List<RestaurantsResponse.RestaurantData> restaurantList = msg.getRestaurants();
                             for (RestaurantsResponse.RestaurantData restaurant : restaurantList) {
                                 System.out.println(restaurant.toString());
-                                webSocket.sendText(restaurant.toString(),true);
+                                webSocket.sendText(JsonUtil.serialize(msg),true);
                             }
 //                            while (true) {
                                 System.out.print("Enter a restaurant id to check its menu: ");
@@ -123,7 +123,7 @@ public class UserSlave extends FoodieActor {
                             ArrayList<MenuItemsResponse.MenuItemData> menuList = msg.getMenuItems();
                             for (MenuItemsResponse.MenuItemData food : menuList) {
                                 System.out.println(food.toString());
-                                webSocket.sendText(food.toString(), true);
+                                webSocket.sendText(JsonUtil.serialize(msg), true);
                             }
 
                             do {

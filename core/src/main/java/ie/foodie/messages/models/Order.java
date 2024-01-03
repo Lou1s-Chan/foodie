@@ -102,5 +102,6 @@ public class Order implements MessageSerializable {
         public void setQuantity(int quantity) {
             this.quantity = quantity;
         }
+
     }
 }

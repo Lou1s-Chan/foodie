@@ -32,6 +32,10 @@ public class MenuItemsResponse implements MessageSerializable {
         return menuItems;
     }
 
+    public String getMsgType() {
+        return msgType;
+    }
+
     @Override
     public String toString() {
         StringBuilder menuItemsString = new StringBuilder("MenuItemsResponse{\n");
