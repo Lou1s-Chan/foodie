@@ -1,0 +1,37 @@
+version: '3'
+
+services:
+  order-service:
+    build:
+      context: .
+      dockerfile: orderService/Dockerfile-order
+    ports:
+      - "2553:2553"
+
+  user-service:
+    build:
+      context: .
+      dockerfile: userService/Dockerfile-user
+    ports:
+      - "2552:2552"
+
+  restaurant-service:
+    build:
+      context: .
+      dockerfile: restaurantService/Dockerfile-restaurant
+    ports:
+      - "2551:2551"
+
+  payment-service:
+    build:
+      context: .
+      dockerfile: paymentService/Dockerfile-payment
+    ports:
+      - "2555:2555"
+
+  delivery-service:
+    build:
+      context: .
+      dockerfile: deliveryService/Dockerfile-delivery
+    ports:
+      - "2554:2554"
