@@ -7,7 +7,7 @@ const User = ({ onStatusChange }) => {
   useEffect(() => {
     let eventSource;
     const connectToSSE = () => {
-      eventSource = new EventSource("http://localhost:8082/user_stream");
+      eventSource = new EventSource("http://user-service:8082/user_stream");
       eventSource.onopen = () => {
         onStatusChange("online");
       };

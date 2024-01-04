@@ -7,7 +7,7 @@ const Restaurant = ({ onStatusChange }) => {
   useEffect(() => {
     let eventSource;
     const connectToSSE = () => {
-      eventSource = new EventSource("http://localhost:8080/restaurant_stream");
+      eventSource = new EventSource("http://restaurant-service:8080/restaurant_stream");
       eventSource.onopen = () => {
         onStatusChange("online");
       };
