@@ -7,7 +7,7 @@ const Delivery = ({ onStatusChange }) => {
   useEffect(() => {
     let eventSource;
     const connectToSSE = () => {
-      eventSource = new EventSource("http://delivery-service:8083/delivery_stream");
+      eventSource = new EventSource("http://localhost:8083/delivery_stream");
       eventSource.onopen = () => {
         onStatusChange("online");
       };

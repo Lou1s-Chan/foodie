@@ -5,6 +5,6 @@ WORKDIR /app
 COPY ../restaurantService/target/restaurant-service-2.0-allinone.jar app.jar
 
 EXPOSE 2551
-EXPOSE 8080
+EXPOSE 8085
 
 CMD ["java","-jar","app.jar"]

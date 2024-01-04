@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 public class SSEController {
 
     private final CopyOnWriteArrayList<SseEmitter> emitters = new CopyOnWriteArrayList<>();
-    @CrossOrigin(origins = "http://host.docker.internal:3000")
+    @CrossOrigin(origins = "*")
     @GetMapping("/user_stream") //port 8082
     public SseEmitter stream() {
         SseEmitter emitter = createEmitter();

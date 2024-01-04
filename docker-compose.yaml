@@ -1,15 +1,15 @@
 version: '3'
 
 services:
-#  front-end:
-#    build:
-#      context: .
-#      dockerfile: frontend/Dockerfile-frontend
-#
-#    ports:
-#      - "3000:3000"
-#    networks:
-#      - foodie-network
+  front-end:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile-frontend
+
+    ports:
+      - "3000:3000"
+    networks:
+      - foodie-network
 
   order-service:
     build:
@@ -31,7 +31,7 @@ services:
 
     ports:
       - "2551:2551"
-      - "8080:8080"
+      - "8085:8085"
 
   payment-service:
     build:

@@ -7,7 +7,7 @@ const Payment = ({ onStatusChange }) => {
   useEffect(() => {
     let eventSource;
     const connectToSSE = () => {
-      eventSource = new EventSource("http://payment-service:8084/payment_stream");
+      eventSource = new EventSource("http://localhost:8084/payment_stream");
       eventSource.onopen = () => {
         onStatusChange("online");
       };
