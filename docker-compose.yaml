@@ -5,20 +5,19 @@ services:
     build:
       context: .
       dockerfile: orderService/Dockerfile-order
+
     ports:
       - "2553:2553"
-
-  user-service:
-    build:
-      context: .
-      dockerfile: userService/Dockerfile-user
-    ports:
-      - "2552:2552"
+    networks:
+      - foodie-network
 
   restaurant-service:
     build:
       context: .
       dockerfile: restaurantService/Dockerfile-restaurant
+    networks:
+      - foodie-network
+
     ports:
       - "2551:2551"
 
@@ -26,6 +25,9 @@ services:
     build:
       context: .
       dockerfile: paymentService/Dockerfile-payment
+    networks:
+      - foodie-network
+
     ports:
       - "2555:2555"
 
@@ -33,5 +35,12 @@ services:
     build:
       context: .
       dockerfile: deliveryService/Dockerfile-delivery
+    networks:
+      - foodie-network
+
     ports:
       - "2554:2554"
+
+networks:
+  foodie-network:
+    driver: bridge

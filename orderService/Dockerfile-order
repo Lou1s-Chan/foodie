@@ -1,13 +1,10 @@
-FROM maven:3.8.6-openjdk-8
+FROM openjdk:8-jdk
 
 WORKDIR /app
 
-COPY pom.xml .
-
-COPY src .
-
-COPY target .
+COPY ../orderService/target/order-service-2.0-allinone.jar app.jar
 
 EXPOSE 2553
+EXPOSE 8081
 
-CMD ["mvn","exec:java"]
+CMD ["java","-jar","app.jar"]

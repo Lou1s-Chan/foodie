@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 public class SSEController {
 
     private final CopyOnWriteArrayList<SseEmitter> emitters = new CopyOnWriteArrayList<>();
-    @CrossOrigin(origins = "http://localhost:3000")
+    @CrossOrigin(origins = "http://front-end:3000")
     @GetMapping("/order_stream")
     public SseEmitter stream() {
         SseEmitter emitter = createEmitter();

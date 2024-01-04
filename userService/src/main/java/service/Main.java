@@ -20,10 +20,15 @@ import ie.foodie.messages.RestaurantQueryMessage;
 import ie.foodie.messages.models.Customer;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration;
+import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration;
 import org.springframework.context.ApplicationContext;
 import service.SSE.SSEController;
 
-@SpringBootApplication
+@SpringBootApplication(exclude = {
+        MongoAutoConfiguration.class,
+        MongoDataAutoConfiguration.class
+})
 public class Main {
 
     private static MongoClient mongoClient;
@@ -75,7 +80,7 @@ public class Main {
                 Customer user = getUserDetails(username);
                 ActorSelection selection1 = system
                         .actorSelection(
-                                "akka.tcp://user-system@user-service:2552/user/user-service");
+                                "akka.tcp://user-system@localhost:2552/user/user-service");
                 selection1.tell(user, ref);
             } else {
                 System.out.println("Invalid username or password. Please try again.");

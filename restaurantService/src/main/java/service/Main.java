@@ -6,11 +6,16 @@ import akka.actor.ActorSystem;
 import akka.actor.Props;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration;
+import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration;
 import org.springframework.context.ApplicationContext;
 import service.SSE.SSEController;
 
 
-@SpringBootApplication
+@SpringBootApplication(exclude = {
+        MongoAutoConfiguration.class,
+        MongoDataAutoConfiguration.class
+})
 public class Main {
     static ActorSystem system = ActorSystem.create("restaurant-system");
 
@@ -20,15 +25,5 @@ public class Main {
         final Props ResServiceProp = Props.create(ResActor.class, () -> new ResActor(sseController));
         final ActorRef ResServiceRef = system.actorOf(ResServiceProp, "restaurant-service");
         System.out.println("Running Restaurant Service");
-
-
-        try {
-            String OrderPath = "akka.tcp://order-system@order-service:2553/user/order-service";
-            ActorSelection orderActor = system.actorSelection(OrderPath);
-            System.out.println("remote order Actor: " + orderActor);
-        } catch (Exception e) {
-            System.out.println("Error connecting to order service.");
-            e.printStackTrace();
-        }
     }
 }

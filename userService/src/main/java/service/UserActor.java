@@ -47,11 +47,9 @@ public class UserActor extends FoodieActor {
     private ArrayList<OrderDetail> orderDetail = new ArrayList<>();
     private Scanner scanner = new Scanner(System.in);
 
-    private ActorSelection paymentServiceActor;
     private SSEController sseController;
 
     public UserActor(ActorSystem system, SSEController sseController) {
-        this.paymentServiceActor = system.actorSelection("akka.tcp://payment-system@localhost:2555/user/payment-service");
         this.sseController = sseController;
     }
 
