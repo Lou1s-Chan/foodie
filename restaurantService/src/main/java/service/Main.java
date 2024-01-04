@@ -23,13 +23,9 @@ public class Main {
 
 
         try {
-            String OrderPath = "akka.tcp://order-system@localhost:2553/user/order-service";
+            String OrderPath = "akka.tcp://order-system@order-service:2553/user/order-service";
             ActorSelection orderActor = system.actorSelection(OrderPath);
             System.out.println("remote order Actor: " + orderActor);
-
-            String userPath = "akka.tcp://user-system@localhost:2552/user/user-service";
-            ActorSelection userActor = system.actorSelection(userPath);
-            System.out.println("remote user Actor: " + userActor);
         } catch (Exception e) {
             System.out.println("Error connecting to order service.");
             e.printStackTrace();

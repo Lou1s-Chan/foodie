@@ -75,7 +75,7 @@ public class Main {
                 Customer user = getUserDetails(username);
                 ActorSelection selection1 = system
                         .actorSelection(
-                                "akka.tcp://user-system@localhost:2552/user/user-service");
+                                "akka.tcp://user-system@user-service:2552/user/user-service");
                 selection1.tell(user, ref);
             } else {
                 System.out.println("Invalid username or password. Please try again.");
@@ -85,7 +85,7 @@ public class Main {
 
         // once user successfully login, send message to RESTAURANT for restaunt list
         ActorSelection selection2 = system
-                .actorSelection("akka.tcp://order-system@localhost:2553/user/order-service");
+                .actorSelection("akka.tcp://order-system@order-service:2553/user/order-service");
         System.out.println("user make a query to restaurant system (through order service)");
         selection2.tell(new RestaurantQueryMessage(RestaurantQueryMessage.QueryType.RESTAURANT_LIST, ref), ref);
 
