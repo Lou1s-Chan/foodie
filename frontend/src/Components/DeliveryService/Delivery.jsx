@@ -9,7 +9,7 @@ const Delivery = ({ onStatusChange }) => {
     const connectToSSE = () => {
       eventSource = new EventSource("http://localhost:8083/delivery_stream");
       eventSource.onopen = () => {
-        onStatusChange("connected");
+        onStatusChange("online");
       };
       eventSource.onmessage = (event) => {
         const data = JSON.parse(event.data);
@@ -28,7 +28,7 @@ const Delivery = ({ onStatusChange }) => {
       };
 
       eventSource.onerror = (error) => {
-        onStatusChange("disconnected");
+        onStatusChange("offline");
         console.error("EventSource failed:", error);
         eventSource.close();
         setTimeout(connectToSSE, 5000); // Try to reconnect after 5 seconds
