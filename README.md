@@ -19,7 +19,7 @@ Our front-end dashboard receives live updates from the server and shows the heal
 
 1. Go into the project folder and type:
 ```
-mvn clean install -DskipTests
+mvn clean install
 ```
 ```
 docker compose up --build
