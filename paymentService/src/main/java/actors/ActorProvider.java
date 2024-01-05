@@ -6,7 +6,7 @@ import akka.actor.ActorSystem;
 public class ActorProvider {
 
     public static ActorSelection getOrderServiceActor(ActorSystem system) {
-        String orderServiceHost = "order-service";
+        String orderServiceHost = "localhost";
         int orderServicePort = 2553; 
         return system.actorSelection("akka.tcp://order-system@" + orderServiceHost + ":" + orderServicePort + "/user/order-service");
     }

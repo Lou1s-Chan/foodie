@@ -172,7 +172,7 @@ public class UserActor extends FoodieActor {
                         }
                         ActorSystem system = getContext().getSystem();
                         ActorSelection orderSystem = system
-                                .actorSelection("akka.tcp://order-system@order-service:2553/user/order-service");
+                                .actorSelection("akka.tcp://order-system@localhost:2553/user/order-service");
                         System.out.println("user make an order to order system");
 
                         Restaurant restaurant = new Restaurant(restaurantId, restaurantPhone,
@@ -222,7 +222,7 @@ public class UserActor extends FoodieActor {
     private void requestPayment(OrderConfirmMessage msg){
         ActorSystem system = getContext().getSystem();
         ActorSelection orderSystem = system
-                .actorSelection("akka.tcp://order-system@order-service:2553/user/order-service");
+                .actorSelection("akka.tcp://order-system@localhost:2553/user/order-service");
 
         double amountToPay = msg.getTotalPrice();
         int orderId = msg.getOrderId();
