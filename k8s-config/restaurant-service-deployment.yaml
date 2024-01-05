@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.31.2 (HEAD)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: restaurant-service
+  name: restaurant-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: restaurant-service
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert
+        kompose.version: 1.31.2 (HEAD)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/foodie-foodie-network: "true"
+        io.kompose.service: restaurant-service
+    spec:
+      containers:
+        - image: restaurant-service
+          name: restaurant-service
+          ports:
+            - containerPort: 2551
+              hostPort: 2551
+              protocol: TCP
+            - containerPort: 8085
+              hostPort: 8085
+              protocol: TCP
+          resources: {}
+      restartPolicy: Always
+status: {}

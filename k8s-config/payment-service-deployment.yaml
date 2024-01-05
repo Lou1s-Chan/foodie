@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.31.2 (HEAD)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: payment-service
+  name: payment-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: payment-service
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert
+        kompose.version: 1.31.2 (HEAD)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/foodie-foodie-network: "true"
+        io.kompose.service: payment-service
+    spec:
+      containers:
+        - image: payment-service
+          name: payment-service
+          ports:
+            - containerPort: 2555
+              hostPort: 2555
+              protocol: TCP
+            - containerPort: 8084
+              hostPort: 8084
+              protocol: TCP
+          resources: {}
+      restartPolicy: Always
+status: {}
