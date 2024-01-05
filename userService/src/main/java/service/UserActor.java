@@ -37,6 +37,7 @@ import java.security.Key;
 import java.util.Base64;
 
 
+
 public class UserActor extends FoodieActor {
     private int customerId;
     private String customerAddress;
@@ -53,9 +54,9 @@ public class UserActor extends FoodieActor {
         this.sseController = sseController;
     }
 
-    private static MongoClient mongoClient;
-    private static MongoDatabase database;
-    private static String dbURL = "mongodb+srv://foodie:ccOUvdosBLzDprGM@foodie.cli5iha.mongodb.net/?retryWrites=true&w=majority";
+//    private static MongoClient mongoClient;
+//    private static MongoDatabase database;
+    //private static String dbURL = "mongodb+srv://foodie:ccOUvdosBLzDprGM@foodie.cli5iha.mongodb.net/?retryWrites=true&w=majority";
     private static MongoCollection<Document> collection;    
 
     @Override
@@ -286,8 +287,10 @@ public class UserActor extends FoodieActor {
     private String getEncryptedCardNumber(int customerId) {
         String customerIdStr = String.format("%03d", customerId); // Assuming customerId is formatted as a string with leading zeros
 
-        mongoClient = MongoClients.create(dbURL);
-        database = mongoClient.getDatabase("foodie");
+       // mongoClient = MongoClients.create(dbURL);
+//        database = mongoClient.getDatabase("foodie");
+
+        MongoDatabase database = Main.getDatabase();
         collection = database.getCollection("users");
 
         Bson filter = Filters.eq("ID", customerIdStr);

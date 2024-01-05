@@ -50,6 +50,8 @@ public class Main {
         database = mongoClient.getDatabase("foodie");
         collection = database.getCollection("users");
 
+
+
         try {
             System.out.println("Connected to MongoDB collections successfully.");
         } catch (Exception e) {
@@ -80,7 +82,7 @@ public class Main {
                 Customer user = getUserDetails(username);
                 ActorSelection selection1 = system
                         .actorSelection(
-                                "akka.tcp://user-system@localhost:2552/user/user-service");
+                                "/user/user-service");
                 selection1.tell(user, ref);
             } else {
                 System.out.println("Invalid username or password. Please try again.");
@@ -122,5 +124,13 @@ public class Main {
         Customer user = new Customer(id, address, phone);
         return user;
 
+    }
+
+    public static MongoClient getMongoClient() {
+        return mongoClient;
+    }
+
+    public static MongoDatabase getDatabase() {
+        return database;
     }
 }
