@@ -8,6 +8,25 @@ Our front-end dashboard receives live updates from the server and shows the heal
 
 <img src = '/front-end-screenshot.png' alt = "cover" />
 
+## How to run the system:
+
+1. Go into the project folder and type:
+```
+mvn clean install -DskipTests
+docker compose up --build
+```
+this will run 4 of the service containers (excluding user).
+
+2. Next, go to user service folder to run this service:
+```
+cd userService
+docker buildx build -t ‘user-service’ .
+docker run -it --network foodie_foodie-network user-service
+```
+
+3. Voila! 
+
+
 ## 🎥 Watch our video [here](https://drive.google.com/file/d/1STfa-P64WnnOVKS1Gz2iPkgbAtfGayyi/view?usp=sharing) 🌟
 
 
