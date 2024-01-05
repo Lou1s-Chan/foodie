@@ -37,7 +37,7 @@ docker buildx build -t 'user-service' .
 docker network create foodie_foodie-network
 ```
 ```
-docker run -it --name user-service -p 2552:2552 -p 8082:8082 --network foodie_foodie-network user-service
+docker run -it -p 2552:2552 -p 8082:8082 --network foodie_foodie-network user-service
 ```
 
 3. Voila! 
