@@ -37,7 +37,7 @@ If you encounter network error, type:
 ```
 docker network create foodie_foodie-network
 ```
-then:
+then run the user service:
 ```
 docker run -it -p 2552:2552 -p 8082:8082 --network foodie_foodie-network user-service
 ```
