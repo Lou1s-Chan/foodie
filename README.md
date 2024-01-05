@@ -6,6 +6,8 @@ Foodies is a distributed system that uses Akka Actors to carry out the necessary
 
 Our front-end dashboard receives live updates from the server and shows the health and status of the entire system in real-time! This was done thanks to SSE technology. 
 
+<img src = '/front-end-screenshot.png' alt = "cover" />
+
 ## 🎥 Watch our video [here](https://drive.google.com/file/d/1STfa-P64WnnOVKS1Gz2iPkgbAtfGayyi/view?usp=sharing) 🌟
 
 
