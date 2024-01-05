@@ -43,8 +43,11 @@ docker run -it --name user-service -p 2552:2552 -p 8082:8082 --network foodie_fo
 3. Voila! 
 
 
-## 🎥 Watch our video [here](https://drive.google.com/file/d/1STfa-P64WnnOVKS1Gz2iPkgbAtfGayyi/view?usp=sharing) 🌟
-## 📖 Read our report [here]() 🌠
+## 🎥 Watch our video 
+[Unlisted YouTube Video](https://youtu.be/3_KOCe5xtF0) 🌟
+[Google Drive](https://drive.google.com/file/d/1STfa-P64WnnOVKS1Gz2iPkgbAtfGayyi/view?usp=sharing) 🌟
+
+## 📖 Read our report [here](https://github.com/Lou1s-Chan/foodie/blob/master/foodie-group-report.pdf) 🌠
 
 
 
