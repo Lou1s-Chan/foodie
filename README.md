@@ -31,7 +31,7 @@ this will run 4 of the service containers (excluding user).
 cd userService
 ```
 ```
-docker buildx build -t ‘user-service’ .
+docker buildx build -t 'user-service' .
 ```
 ```
 docker run -it --network foodie_foodie-network user-service
