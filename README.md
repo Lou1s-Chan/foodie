@@ -44,6 +44,29 @@ docker run -it -p 2552:2552 -p 8082:8082 --network foodie_foodie-network user-se
 
 3. Voila! 
 
+## Instruction on Kubernetes deployment
+0. You need to make sure you have appropriate Kubectl installation and create Kubernetes cluster with Kind/Kubeadm or any other similar tools.
+
+1. Going to the userService folder.
+Change all the 'order-system@order-service' in both Main class and UserActor class to 'order-system@localhost'
+
+2. Go to the project root folder and type:
+```
+mvn package
+```
+```
+docker compose build
+```
+All the images required for Kubernetes deployment will be made in this step.
+
+3. Go to the folder 'k8s-config'.
+```
+kubectl apply -f *.yaml
+```
+
+4. All other thing should just like dockerization the user service, but do not need to specify a network for it.
+
+5. Enjoy~
 
 ## 🎥 Watch our video [here](https://drive.google.com/file/d/1STfa-P64WnnOVKS1Gz2iPkgbAtfGayyi/view?usp=sharing) 🌟
 ## 📖 Read our report [here]() 🌠
