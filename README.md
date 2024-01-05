@@ -34,6 +34,9 @@ cd userService
 docker buildx build -t 'user-service' .
 ```
 ```
+docker network create foodie_foodie-network
+```
+```
 docker run -it --network foodie_foodie-network user-service
 ```
 
